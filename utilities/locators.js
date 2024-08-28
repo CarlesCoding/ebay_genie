@@ -1,0 +1,52 @@
+export const locators = {
+  signInPage: {
+    email: "#userid",
+    signInContinueBtn: "#signin-continue-btn",
+    password: "#pass",
+    signInBtn: "#sgnBt",
+    passkeyCancelBtn: "#passkeys-cancel-btn",
+    welcomeMsg: "h1#display-nb-welcome-msg",
+    continueBtn: "#continueBtn",
+  },
+  watchers: {
+    watchItemBtn: "#watchBtn_btn_1",
+    watchBtnText: "Add to watchlist",
+    unwatchBtnText: "Unwatch",
+  },
+  signUpForm: {
+    firstname: "#firstname",
+    lastname: "#lastname",
+    Email: "#Email",
+    password: "#password",
+    submitBtn: "#EMAIL_REG_FORM_SUBMIT",
+  },
+  phoneForm: {
+    phoneCountry: "#phoneCountry",
+    phoneVerifyPage: ".phoneVerifyDiv",
+  },
+  addressForm: {
+    possibleFormSelectors: [".upgFrmRedSgnd", "#upgradeForm"],
+    countrySelector: "#countryId",
+    country: "United States",
+    addressInputField: "#addressSugg",
+    manualBtn: "#addressSugg_manualEntryLink",
+    state: "#state",
+    address: "#address1",
+    city: "#city",
+    zipCode: "#zip",
+    phoneVerifyPage: "#phoneFlagComp1",
+    submit: "#sbtBtn",
+  },
+  urlHandler: {
+    signInLink: "#signin-link",
+    password: "#pass",
+    submit: "#sgnBt",
+    upgradeForm: ".upgFrmRedSgnd",
+    myEbayLink: 'a[title="My eBay"]',
+  },
+  ebayGen: {
+    radioBtn: "#personalaccount-radio",
+    personalAcctRadioBtn: 'label[for="personalaccount-radio"]',
+    firstName: "#firstname",
+  },
+};
