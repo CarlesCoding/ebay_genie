@@ -118,9 +118,9 @@ Here are some planned features and improvements for future releases:
 - [ ] **Documentation Enhancements**: Expand the documentation with more examples and troubleshooting tips.
 - [ ] **Error Handling**: Improve error handling throughout the application.
 - [ ] **Process Title Update**: Implement a function to update the process title.
-- [ ] **Account Object Enhancement**: Add a "banned" property to the account object to indicate if the account is banned on login.
+- [x] **Account Object Enhancement**: Add a "banned" property to the account object to indicate if the account is banned on login.
 - [ ] **Load from File Option**: Add an option to load details from a file using user config.json for use on a new machine.
-- [ ] **Locator Management**: Consolidate all locators in a single file for easy updating.
+- [x] **Locator Management**: Consolidate all locators in a single file for easy updating.
 - [ ] **Phone Number Re-Verification**: If login requires a sms text to phone number, add 2fa option to get around this.
 - [ ] **Enhance ebay module**: Add ability to do multiple listings at once.
 
