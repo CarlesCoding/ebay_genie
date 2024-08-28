@@ -133,9 +133,9 @@ Feel free to suggest additional features or improvements by opening an issue or 
 👤 Austin Carles
 
 - Linkedin: [@carlescoding](https://www.linkedin.com/in/carlescoding/)
-- Github: [@Beefymuffins](https://github.com/Beefymuffins)
+- Github: [@Beefymuffins](https://github.com/CarlesCoding)
 
-Project Link: [https://github.com/Beefymuffins/Ebay-Genie](https://github.com/Beefymuffins/Ebay-Genie)
+Project Link: [https://github.com/Beefymuffins/Ebay-Genie](https://github.com/CarlesCoding/Ebay-Genie)
 
 <!-- Acknowledgments  -->
 
@@ -145,4 +145,4 @@ Project Link: [https://github.com/Beefymuffins/Ebay-Genie](https://github.com/Be
 
 ## License
 
-Distributed under the [MIT](https://github.com/Beefymuffins/Ebay-Genie/blob/main/LICENSE) License.
+Distributed under the [MIT](https://github.com/CarlesCoding/Ebay-Genie/blob/main/LICENSE) License.
