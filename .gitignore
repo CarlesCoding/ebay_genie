@@ -45,7 +45,7 @@ sftp-config.json
 
 # Files
 REFACTOR.js
-ebayAccts.json
-accounts/ebayAccts.json
-proxies.txt
+# ebayAccts.json
+# accounts/ebayAccts.json
+# proxies.txt
 
