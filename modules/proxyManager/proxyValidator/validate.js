@@ -1,51 +1,36 @@
-import {
-  extractProxyInfo,
-  getProxyFile,
-  parseProxyString,
-  saveProxies,
-  testProxy,
-} from "../proxy.js";
+import { saveData } from "../../../helpers.js";
+import { getFile, testProxiesConcurrently } from "../proxy.js";
 
 export const validateProxies = async (response) => {
   const { save, getProxiesFrom, proxyList } = response;
   let proxiesToTest;
 
-  // Save valid proxies
-  const validProxies = [];
-
+  // Get Proxies
   try {
-    // Get Proxies
-    proxiesToTest =
-      getProxiesFrom === "Saved proxies" ? await getProxyFile() : proxyList;
+    if (getProxiesFrom === "Saved proxies") {
+      const proxies = await getFile("proxies");
+
+      // Extract proxy strings from JSON objects
+      proxiesToTest = proxies.map((proxyObj) => proxyObj.proxy.trim());
+    } else {
+      // Convert input list to array of proxy strings
+      proxiesToTest = proxyList.split("\n").map((proxy) => proxy.trim());
+    }
 
     // Check if proxies are loaded
-    if (proxiesToTest === null) {
+    if (!proxiesToTest || proxiesToTest.length === 0) {
       global.logThis("No proxies loaded!", "error");
       await sleep(1500);
       global.runMain();
+      return;
     }
-
-    // ------------------------ TEST PROXIES ------------------------
-    proxiesToTest = proxiesToTest.split("\n");
 
     global.logThis(
       `[PROXY TESTER] - Testing ${proxiesToTest.length} proxies...`,
       "warn"
     );
 
-    // Array to store promises
-    let promises = [];
-
-    // Create promises for testing proxies concurrently
-    for (let proxy of proxiesToTest) {
-      let formattedProxy = parseProxyString(proxy);
-      if (formattedProxy) {
-        promises.push(testProxy(formattedProxy, validProxies));
-      }
-    }
-
-    // Wait for all promises to resolve
-    await Promise.allSettled(promises);
+    const validProxies = await testProxiesConcurrently(proxiesToTest);
 
     // log to user
     global.logThis(
@@ -53,13 +38,23 @@ export const validateProxies = async (response) => {
       "success"
     );
 
-    // Save/Overwrite the proxies.txt file
+    // If no proxies are valid, exit
+    if (validProxies.length === 0) {
+      global.logThis("[PROXY TESTER] - No valid proxies found.", "error");
+      await sleep(1500);
+      global.runMain();
+      return;
+    }
+
+    // Save/Overwrite the proxies file
     if (save) {
       global.logThis(
         `[PROXY TESTER] - Saving ${validProxies.length} valid proxies...`,
         "info"
       );
-      saveProxies(validProxies);
+
+      saveData(validProxies, "proxies", "overwrite");
+
       global.logThis(
         `[PROXY TESTER] - Saved ${validProxies.length} proxies!`,
         "success"
@@ -67,22 +62,24 @@ export const validateProxies = async (response) => {
     } else {
       // Display in console
       global.logThis(
-        `[PROXY TESTER] - [${
-          validProxies.length
-        } Valid Proxies]:\n${validProxies.join("\n")}!`,
+        `[PROXY TESTER] - There are [${validProxies.length}/${proxiesToTest.length}] valid proxies.`,
         "success"
       );
+
+      // Display in console
+      validProxies.forEach((proxy) => {
+        global.logThis(proxy.proxy, "success");
+      });
     }
 
-    await sleep(10000);
+    await sleep(5000);
     global.runMain();
+    return;
   } catch (error) {
     //  console.log(`Error: ${e.message}`);
     global.logThis(
-      `[PROXY TESTER] - [Error] -> Error with proxy validation.`,
+      `[PROXY TESTER] - [Error] -> Error with proxy validation. Error: ${error}`,
       "error"
     );
   }
 };
-
-// ------------------------ HELPER FUNCTIONS ------------------------

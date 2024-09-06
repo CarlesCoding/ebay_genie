@@ -7,92 +7,38 @@ import { countryCodes } from "./utilities/statesAndCodes.js";
 import UserAgent from "user-agents";
 import lockfile from "proper-lockfile";
 
-// Update process title
-// export const updateProcessTitle = (views = 0, watchers = 0, fails = 0) => {
-//   let title = "";
-//   if (process.platform === "win32") {
-//     title = `Ebay viewbot | Views: ${views} | Watchers: ${watchers} | Fails: ${fails}`;
-//     process.title = title;
-//   } else {
-//     process.stdout.write("\x1b]2;" + title + "\x1b\x5c"); // Other then Windows
-//   }
-// };
-
-// TODO: TEST THIS
-// New Process Title (using globals)
+// -------------------- Update process title --------------------
 export const updateProcessTitle = () => {
   let title = ``;
   if (process.platform === "win32") {
-    process.title = `Ebay viewbot | Version: ${version} | Total Task: ${
-      global.savedConfig.task?.length || 0
-    } | Success: ${global.savedConfig.task?.success || 0} | Failed: ${
-      global.savedConfig.task?.failed || 0
-    }`;
+    process.title = `Ebay viewbot | Version: ${version}`;
     title = process.title;
   } else {
     process.stdout.write("\x1b]2;" + title + "\x1b\x5c"); // Other then Windows
   }
 };
 
-// Update the process title
-// function updateProcessTitle(newTitle) {
-//   process.title = newTitle;
-// }
-
-// Usage example
-// updateProcessTitle("My CLI App - Task 1");
-// The process title will now be 'My CLI App - Task 1'
-
-// Success & Failed update
-const updateSuccessFailed = () => {};
-
 // --------------------------- Files -----------------------------
 // Read from JSON file
 export const readJsonFile = async (filePath) => {
   try {
     const data = await fs.readFile(filePath, "utf8");
-    const jsonData = JSON.parse(data);
-    return jsonData;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-};
-
-export const readFile = async (filePath) => {
-  try {
-    const contents = await readJsonFile(filePath);
-    return contents;
+    return JSON.parse(data);
   } catch (error) {
     if (error.code === "ENOENT") {
       return null; // file does not exist
-    } else {
-      throw error;
     }
+    console.error(error);
+    throw error;
   }
 };
 
-export const writeFile = async (filePath, data) => {
+export const writeJsonFile = async (filePath, data) => {
   try {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2));
   } catch (error) {
     throw error;
   }
-};
-
-// Get file path based on environment
-// TODO: Changed so its only .txt
-export const getFilePath = (name) => {
-  let filePath;
-
-  // Check if in development environment
-  if (process.env.NODE_ENV !== "development") {
-    filePath = `${name}.txt.dev`;
-  } else {
-    filePath = `${name}.txt`;
-  }
-
-  return filePath;
 };
 
 // Check if file exists
@@ -105,12 +51,131 @@ export const checkFileExist = async (filePath) => {
   }
 };
 
+// Create a func that creates a proxy.txt file and an accounts.json file
+export const createNeededFiles = async () => {
+  // Files to create
+  const filesToCreate = [
+    {
+      path: path.join(process.cwd(), "assets", "proxies.json"),
+      content: { proxies: [] },
+    },
+    {
+      path: path.join(process.cwd(), "assets", "ebayAccts.json"),
+      content: { accounts: [] },
+    },
+  ];
+
+  // Check for file existence & add only the missing files into the next step.
+  const filesNotExisting = await Promise.all(
+    filesToCreate.map(async ({ path, content }) => {
+      const fileExists = await checkFileExist(path);
+      return !fileExists ? { path, content } : null;
+    })
+  );
+
+  // Filter out any `null` results (files that already exist)
+  const filesToWrite = filesNotExisting.filter((file) => file !== null);
+
+  // Create missing files
+  await Promise.all(
+    filesToWrite.map(({ path, content }) => writeJsonFile(path, content))
+  );
+};
+
+// ------------------------ Data Files (accounts & proxies) --------------------------
+// Save accounts & proxies (default: append)
+export const saveData = async (data, file, action = "append") => {
+  const rootDirectory = process.cwd();
+  const filePath = path.join(rootDirectory, "assets", `${file}.json`);
+  let release;
+
+  if (!data || typeof data !== "object") {
+    throw new Error("Invalid data object");
+  }
+
+  try {
+    // Acquire a lock on the file
+    release = await lockfile.lock(filePath);
+
+    let contents;
+
+    if (action === "append") {
+      const fileExists = await checkFileExist(filePath);
+
+      if (fileExists) {
+        contents = await readJsonFile(filePath);
+      } else {
+        contents = { [file]: [] }; // Initialize with an empty array
+      }
+
+      // Ensure `contents[file]` exists and is an array
+      if (!Array.isArray(contents[file])) {
+        throw new Error(`Invalid format in ${file}.json`);
+      }
+
+      // ----------------------------
+      // Create a map to keep track of existing proxies or accounts
+      // when you append data, you avoid duplicates and ensure all entries are up-to-date.
+      const existingMap = new Map(
+        contents[file].map((item) => [item.proxy || item.account, item])
+      );
+
+      // Update existing entries and add new entries
+      for (const item of data) {
+        if (existingMap.has(item.proxy || item.account)) {
+          if (item.latency === 0) {
+            console.log(
+              `SKIPPING ITEM : ${item.proxy} with latency: ${item.latency}`
+            );
+            continue; // Skip adding the item if it already exists
+          }
+        }
+        existingMap.set(item.proxy || item.account, item);
+      }
+
+      // Convert the map back to an array
+      contents[file] = Array.from(existingMap.values());
+
+      // ----------------------------
+    } else if (action === "overwrite") {
+      contents = {
+        [file]: data,
+      };
+    } else {
+      throw new Error(`Unknown action: ${action}`);
+    }
+
+    await writeJsonFile(filePath, contents);
+  } catch (error) {
+    throw new Error(`Failed to save ${data} to ${filePath}: ${error.message}`);
+  } finally {
+    // Release the lock
+    if (release) {
+      await release();
+    }
+  }
+};
+
+// Delete all saved data from file (accounts & proxies)
+export const deleteData = async (file) => {
+  const rootDirectory = process.cwd();
+  const filePath = path.join(rootDirectory, "assets", `${file}.json`);
+
+  global.logThis("Deleting all saved proxies...", "info");
+
+  let contents = { [file]: [] };
+
+  await writeJsonFile(filePath, contents);
+
+  global.logThis(`Successfully deleted all saved ${file}!`, "success");
+};
+
 // --------------------------- Accounts -----------------------------
 // Get Array of accounts from eBayAccounts.json
-export const getAccounts = async () => {
+export const getAllSavedAccounts = async () => {
   let contents;
   // Get file
-  const filePath = path.join(process.cwd(), "accounts", "ebayAccts.json");
+  const filePath = path.join(process.cwd(), "assets", "ebayAccts.json");
 
   try {
     // Check if file exists
@@ -132,10 +197,16 @@ export const getAccounts = async () => {
 // Get array of accounts by random based on amount specified
 export const getArrayOfAccounts = async (qty) => {
   // Get file
-  const filePath = path.join(process.cwd(), "accounts", "ebayAccts.json");
+  const filePath = path.join(process.cwd(), "assets", "ebayAccts.json");
 
-  // Read file
-  const contents = await readJsonFile(filePath);
+  let contents;
+
+  try {
+    // Read file
+    contents = await readJsonFile(filePath);
+  } catch (error) {
+    throw new Error(`Failed to get accounts: ${error.message}`);
+  }
 
   // Function to shuffle the array using Fisher-Yates algorithm
   function shuffleArray(array) {
@@ -158,131 +229,10 @@ export const getArrayOfAccounts = async (qty) => {
   return newArray;
 };
 
-// Save account
-// export const saveAccount = async (account) => {
-//   // TESTING PATH ---
-//   // import { fileURLToPath } from "url";
-//   // import { dirname } from "path";
-//   // const __dirname = dirname(fileURLToPath(import.meta.url));
-//   // const fp = path.resolve(__dirname, "../../../..");
-//   // const filePath = path.join(fp, "accounts", "ebayAccts.json");
-//   // ---------
-
-//   // Production path
-//   const rootDirectory = process.cwd();
-//   const filePath = path.join(rootDirectory, "accounts", "ebayAccts.json");
-//   let contents;
-
-//   try {
-//     // Check if file exists
-//     let fileExist = await checkFileExist(filePath);
-
-//     if (!fileExist) {
-//       contents = fs.writeFile(
-//         filePath,
-//         JSON.stringify({ accounts: [] }, null, 2)
-//       );
-//     } else {
-//       // Read file and get contents
-//       contents = await readJsonFile(filePath);
-//     }
-
-//     // Add new account
-//     contents.accounts.push(account);
-
-//     // Write file
-//     // fs.writeFile(filePath, JSON.stringify(contents, null, 2));
-//     await writeFile(filePath, contents);
-
-//     return;
-//   } catch (error) {
-//     throw new Error(`Failed to save account: ${error.message}`);
-//   }
-// };
-
-// export const saveAccount = async (account) => {
-//   const rootDirectory = process.cwd();
-//   const filePath = path.join(rootDirectory, "accounts", "ebayAccts.json");
-
-//   if (!account || typeof account !== "object") {
-//     throw new Error("Invalid account object");
-//   }
-
-//   try {
-//     let contents = await readFile(filePath);
-//     if (!contents) {
-//       contents = { accounts: [] };
-//     }
-
-//     contents.accounts.push(account);
-//     await writeFile(filePath, contents);
-//   } catch (error) {
-//     throw new Error(`Failed to save account: ${error.message}`);
-//   }
-// };
-
-export const saveAccount = async (account) => {
-  const rootDirectory = process.cwd();
-  const filePath = path.join(rootDirectory, "accounts", "ebayAccts.json");
-  let release;
-
-  if (!account || typeof account !== "object") {
-    throw new Error("Invalid account object");
-  }
-
-  try {
-    // Acquire a lock on the file
-    release = await lockfile.lock(filePath);
-
-    const fileExists = await checkFileExist(filePath);
-
-    let contents;
-
-    if (fileExists) {
-      contents = await readFile(filePath);
-      contents = JSON.parse(contents);
-    } else {
-      contents = { accounts: [] };
-    }
-
-    contents.accounts.push(account);
-    await writeFile(filePath, contents);
-  } catch (error) {
-    throw new Error(`Failed to save account to ${filePath}: ${error.message}`);
-  } finally {
-    // Release the lock
-    if (release) {
-      await release();
-    }
-  }
-};
-
-// export const updateAccount = async (account) => {
-//   const rootDirectory = process.cwd();
-//   const filePath = path.join(rootDirectory, "accounts", "ebayAccts.json");
-
-//   try {
-//     const contents = await readFile(filePath);
-//     if (!contents) {
-//       throw new Error("Account file does not exist");
-//     }
-
-//     const index = contents.accounts.findIndex((a) => a.id === account.id);
-//     if (index === -1) {
-//       throw new Error("Account not found");
-//     }
-
-//     contents.accounts[index] = account;
-//     await writeFile(filePath, contents);
-//   } catch (error) {
-//     throw new Error(`Failed to update account: ${error.message}`);
-//   }
-// };
-
 // Update Account with file lock
 export const updateAccount = async (account) => {
   const rootDirectory = process.cwd();
-  const filePath = path.join(rootDirectory, "accounts", "ebayAccts.json");
+  const filePath = path.join(rootDirectory, "assets", "ebayAccts.json");
 
   let release;
   try {
@@ -290,7 +240,7 @@ export const updateAccount = async (account) => {
     release = await lockfile.lock(filePath);
 
     // Read the file content
-    const contents = await readFile(filePath);
+    const contents = await readJsonFile(filePath);
     if (!contents) {
       throw new Error("Account file does not exist");
     }
@@ -303,7 +253,7 @@ export const updateAccount = async (account) => {
     contents.accounts[index] = account;
 
     // Write the updated accounts back to the file
-    await writeFile(filePath, contents);
+    await writeJsonFile(filePath, contents);
   } catch (error) {
     throw new Error(`Failed to update account: ${error.message}`);
   } finally {

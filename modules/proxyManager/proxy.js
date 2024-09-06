@@ -1,22 +1,37 @@
 import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import path from "path";
-import fs from "fs/promises";
-import { getFilePath, readJsonFile } from "../../helpers.js";
-import axios from "axios";
+import {
+  checkFileExist,
+  randomItemFromArray,
+  readJsonFile,
+} from "../../helpers.js";
 import { axiosTestProxy } from "../../services/axios.js";
 import { urls } from "../../utilities/urls.js";
 const data = await readJsonFile("./config/config.json");
 const timeout = data.CONNECTION_TIMEOUT_LIMIT;
 
-export const getProxyFile = async () => {
-  const filePath = getFilePath("proxies");
-  let p = path.join(process.cwd(), filePath);
-  let contents = await fs.readFile(p, "utf8");
-  if (contents.includes("ip:port:username:password")) {
-    return null;
-  } else {
-    return contents;
+/*
+  Get proxy geolocation: https://reallyfreegeoip.org/json/66.63.167.226
+*/
+
+export const getFile = async (file) => {
+  let contents;
+  let filePath = path.join(process.cwd(), "assets", `${file}.json`);
+
+  try {
+    // Check if file exists
+    let fileExist = await checkFileExist(filePath);
+    if (!fileExist) {
+      throw new Error("File does not exist or is empty.");
+    } else {
+      // Read file and get contents
+      contents = await readJsonFile(filePath);
+    }
+
+    return contents[file];
+  } catch (error) {
+    throw new Error(`Failed to get ${file} file: ${error.message}`);
   }
 };
 
@@ -35,9 +50,10 @@ export const parseProxyString = (proxy) => {
 export const extractProxyInfo = (proxy) => {
   // Remove 'http://' prefix
   const proxyWithoutPrefix = proxy.replace("http://", "");
+  const parts = proxyWithoutPrefix.split(":");
 
   // Check if credentials are present
-  if (proxyWithoutPrefix.includes("@")) {
+  if (proxyWithoutPrefix.includes("@") || parts.length > 2) {
     // Split into components with credentials
     const [credentials, ipAndPort] = proxyWithoutPrefix.split("@");
     const [username, password] = credentials.split(":");
@@ -51,8 +67,8 @@ export const extractProxyInfo = (proxy) => {
 };
 
 export const getRandomProxy = async () => {
-  let list = (await getProxyFile()).split("\n");
-  let proxy = list[Math.floor(Math.random() * list.length)];
+  let list = await getFile("proxies");
+  let { proxy } = randomItemFromArray(list);
   let formatted = parseProxyString(proxy);
   return formatted;
 };
@@ -77,7 +93,21 @@ export const fetchWithProxies = async (url, headers) => {
   }
 };
 
-export const testProxy = async (proxy, validProxies) => {
+export const testProxiesConcurrently = async (proxiesToTest) => {
+  const promises = proxiesToTest.map((proxy) =>
+    testProxy(parseProxyString(proxy))
+  );
+
+  const results = await Promise.allSettled(promises);
+
+  const validProxies = results
+    .filter((result) => result.status === "fulfilled" && result.value.isValid)
+    .map((result) => result.value.data);
+
+  return validProxies;
+};
+
+export const testProxy = async (proxy, validProxies = []) => {
   const { ip, port } = extractProxyInfo(proxy);
   let proxyInfo = `${ip}:${port}`;
 
@@ -86,7 +116,6 @@ export const testProxy = async (proxy, validProxies) => {
 
     // Test the proxy
     const axiosInstance = await axiosTestProxy(proxy).get();
-    // await axiosInstance.get();
 
     const elapsedTime = new Date() - startTime;
 
@@ -98,48 +127,17 @@ export const testProxy = async (proxy, validProxies) => {
 
     let validProxy = proxy.replace("http://", "");
 
-    // Push the valid proxy into the validProxies array
-    validProxies.push(validProxy);
-
-    const pInfo = {
+    validProxy = {
       proxy: validProxy,
       latency: elapsedTime,
     };
 
-    return pInfo; // Use the time in to filter out proxies
+    return { isValid: true, data: validProxy };
   } catch (e) {
     // console.log(`Error: ${e.message}`);
     global.logThis(`[PROXY TESTER] - [DEAD] --> ${proxyInfo}`, "error");
+    return { isValid: false, data: null };
   }
-};
-
-export const saveProxies = async (proxies) => {
-  // Get correct path
-  const fpath = getFilePath("proxies");
-
-  // Set filePath
-  const filePath = path.join(process.cwd(), fpath);
-
-  // Write proxies to the file, overwriting if it exists
-  await fs.writeFile(filePath, proxies.join("\n"));
-
-  global.logThis(`[PROXY TESTER] - Proxies Saved!`, "success");
-};
-
-export const areProxiesValidFormat = (proxies) => {
-  // Check if proxies is an array
-  if (!Array.isArray(proxies)) {
-    return false;
-  }
-
-  // Check if all elements in proxies are strings
-  for (const proxy of proxies) {
-    if (typeof proxy !== "string") {
-      return false;
-    }
-  }
-
-  return true;
 };
 
 // ------------------------ TESTING ------------------------

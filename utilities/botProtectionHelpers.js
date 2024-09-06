@@ -133,15 +133,6 @@ export const getRandomUserAgent = () => {
   return userAgentList[Math.floor(Math.random() * userAgentList.length)];
 };
 
-// TODO This is the error log i get when filling form sometimes, handle it
-// [eBay Gen] -- [Task #1] Filling in sign up form
-// Typing: E
-// Typing: v
-// Typing: a
-// Typing: n
-// Error during action: page.type: text: expected string, got undefined
-// [eBay Gen] -- [Task #1] Closing browser...
-
 // Add human like typing.This can help evade detection mechanisms that look for direct DOM manipulations.
 export const humanTypeAdvanced = async (page, fields) => {
   try {
@@ -196,13 +187,20 @@ export const humanTypeAdvanced = async (page, fields) => {
         await page.keyboard.press("Backspace");
         await page.waitForTimeout(Math.random() * 100 + 50);
 
-        // TODO: This "text[position - 1]" is whats causing an error, if position is 0 then -1 would be undefined. Check codium history for how to fix
-        // Retype the correct character at the specific position
-        await withCaptchaHandler(page, async () => {
-          await page.type(selector, text[position - 1], {
-            delay: Math.random() * 100 + 50,
+        // If the position is 0 then -1 would be undefined. Causing error. This check should help resolve that issue.
+        if (position > 0) {
+          await withCaptchaHandler(page, async () => {
+            await page.type(selector, text[position - 1], {
+              delay: Math.random() * 100 + 50,
+            });
           });
-        });
+        } else {
+          await withCaptchaHandler(page, async () => {
+            await page.type(selector, text[0], {
+              delay: Math.random() * 100 + 50,
+            });
+          });
+        }
 
         // Move cursor back to the end
         for (let i = 0; i < text.length - position - 1; i++) {

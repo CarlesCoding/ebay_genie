@@ -8,7 +8,7 @@ import { cancelTextVerifiedPhoneNumber } from "../../../../services/SMS/provider
 import { fillAddressForm } from "../forms.js";
 import { createBrowser } from "../../../../utilities/createBrowser.js";
 import { monitorAndSolveCaptcha } from "../../../../utilities/captchaHandler.js";
-import { logger, saveAccount } from "../../../../helpers.js";
+import { logger, saveData } from "../../../../helpers.js";
 import { urls } from "../../../../utilities/urls.js";
 import { locators } from "../../../../utilities/locators.js";
 import { nanoid } from "nanoid";
@@ -43,7 +43,7 @@ export const handelRunAcctGenTask = async (task, index) => {
 
       // save on success
       if (account.success) {
-        await saveAccount(account.user);
+        await saveData(account.user, "ebayAccts", "append");
         logger(task.module, `[Task #${index + 1}] Account Saved!`, "success");
 
         // Exit the loop on success

@@ -5,6 +5,7 @@ import config from "./config/config.js";
 import { defaultConfig } from "./config/config.js";
 import { version } from "./utilities/logo.js";
 import { log } from "./helpers.js";
+import { createNeededFiles } from "./helpers.js";
 
 const main = async () => {
   // Set Globals
@@ -19,6 +20,9 @@ const main = async () => {
   if (!global.savedConfig) {
     config.set("ebay-cli", defaultConfig);
     global.savedConfig = config.get("ebay-cli");
+
+    /* if no config file, means its the first time running the app, Check and add necessary files */
+    createNeededFiles();
   }
 
   // log to user

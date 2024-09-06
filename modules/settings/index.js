@@ -11,6 +11,7 @@ export const handleSettingsManager = async () => {
       choices: [
         "[1] Edit Settings",
         "[2] Force Refresh Configuration",
+        new inquirer.Separator(),
         "[3] Go Back",
       ],
     },
@@ -24,7 +25,9 @@ export const handleSettingsManager = async () => {
     global.logThis("🟢 Configuration refreshed!", "success");
     await sleep(1500);
     global.runMain();
+    return;
   } else if (response.action === "[3] Go Back") {
     global.runMain();
+    return;
   }
 };

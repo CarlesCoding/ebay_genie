@@ -1,6 +1,12 @@
 import inquirer from "inquirer";
-import { parseProxyString, saveProxies, testProxy } from "../proxy.js";
-import { isValidCountryCode } from "../../../helpers.js";
+import {
+  parseProxyString,
+  testProxiesConcurrently,
+  testProxy,
+} from "../proxy.js";
+import { isValidCountryCode, saveData, sleep } from "../../../helpers.js";
+
+// ? Possible site to use for free proxies https://geonode.com/free-proxy-list
 
 export const handelGetProxies = async () => {
   const response = await inquirer.prompt([
@@ -8,14 +14,13 @@ export const handelGetProxies = async () => {
       type: "confirm",
       name: "save",
       message:
-        "Would you like to save/overwrite the saved proxy list with the successful results?",
+        "Would you like to overwrite the saved proxy list with the successful results?",
     },
     {
       type: "input",
       name: "country",
       message:
         "Which country do you want to use? (separate with a comma if multiple)",
-      when: (answers) => answers.action === "[2] Get Free Proxies",
       validate(code) {
         if (!code) {
           return "Please enter a country code.";
@@ -23,7 +28,7 @@ export const handelGetProxies = async () => {
 
         // Check code is only 2 characters && is a valid country code
         if (!isValidCountryCode(code)) {
-          return "Please enter a valid country code.";
+          return "Please enter a valid country code. Example: 'US'";
         }
 
         return true;
@@ -34,7 +39,6 @@ export const handelGetProxies = async () => {
       name: "anonymity",
       message: "Which anonymity level do you want to use?",
       choices: ["elite", "anonymous", "transparent", "all"],
-      when: (answers) => answers.action === "[2] Get Free Proxies",
       validate(response) {
         if (!response.length) {
           return "Please select at least one option.";
@@ -53,11 +57,8 @@ export const handelGetProxies = async () => {
 
   // Fetch url to scrape proxies from
   global.logThis("Fetching proxies...", "info");
-
   await getProxy(save, country, anonymity);
 };
-
-// TODO: Find a way to speed it all up (workers, threads, etc) - abort request helped.. well see if it needs optimized more
 
 /**
  * Proxy Scraping Site:
@@ -88,20 +89,19 @@ const getProxy = async (
     const timeout = 10000;
     const maxLatency = 5000;
 
-    country.replace(/\s/g, "").trim().toUpperCase();
+    country = country.replace(/\s/g, "").trim().toUpperCase();
 
     // Create URL
     const url = `https://api.proxyscrape.com/v2/?request=displayproxies&protocol=${protocol}&timeout=${timeout}&country=${country}&anonymity=${anonymity}`;
-
-    // Save valid proxies
-    const validProxies = [];
 
     // Get Proxies
     const response = await fetch(url);
 
     // Check it was successful
     if (!response.ok) {
-      throw new Error(`Network response was not OK`);
+      throw new Error(
+        `Network response was not OK. Status: ${response.status}`
+      );
     }
 
     // Get response data
@@ -117,50 +117,29 @@ const getProxy = async (
       (proxy) => proxy.trim() !== ""
     );
 
-    // Array to store promises
-    let promises = [];
-
-    // Create promises for testing proxies concurrently
-    for (let proxy of filteredProxiesArray) {
-      let formattedProxy = parseProxyString(proxy);
-      if (formattedProxy) {
-        promises.push(testProxy(formattedProxy, validProxies));
-      }
-    }
-
-    // Wait for all promises to resolve
-    const results = await Promise.allSettled(promises);
+    const validProxies = await testProxiesConcurrently(filteredProxiesArray);
 
     global.logThis(`[PROXY TESTER] - Filtering proxies...`, "info");
 
-    // Filter out elements that are not undefined && have a value >= X ms
-    const filteredValues = results.filter(
-      (result) =>
-        result.value?.latency !== undefined &&
-        result.value?.latency <= maxLatency
-    );
-
-    // Extract only the proxy value from each result
-    const proxiesFromFilteredValues = filteredValues.map(
-      (result) => result.value.proxy
+    const filteredValues = validProxies.filter(
+      (result) => result?.latency !== undefined && result?.latency <= maxLatency
     );
 
     // log to user
     global.logThis(
-      `[PROXY TESTER] - Finished testing ${proxiesArray.length} proxies.`,
+      `[PROXY TESTER] - Finished testing. There were ${filteredValues.length}/${proxiesArray.length} valid proxies.`,
       "success"
     );
 
-    global.logThis(
-      `[PROXY TESTER] - There were ${filteredValues.length} valid proxies.`,
-      "success"
-    );
-
-    if (save && proxiesFromFilteredValues.length > 0) {
+    if (save && filteredValues.length > 0) {
       global.logThis(`[PROXY TESTER] - Saving proxies...`, "info");
-      await saveProxies(proxiesFromFilteredValues);
+      await saveData(filteredValues, "proxies", "overwrite");
     }
+
+    await sleep(3000);
+    global.runMain();
+    return;
   } catch (error) {
-    console.error(`errorGettingProxies = `, error);
+    console.error(`Error fetching proxies = `, error);
   }
 };

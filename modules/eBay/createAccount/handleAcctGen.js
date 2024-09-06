@@ -78,7 +78,9 @@ export const handleAccountGen = async () => {
     global.logThis("🟢 All task cleared!", "success");
     await global.sleep(1500);
     global.runMain();
+    return;
   } else if (response.action === "[5] Go Back") {
     global.runMain();
+    return;
   }
 };

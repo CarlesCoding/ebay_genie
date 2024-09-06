@@ -26,11 +26,13 @@ export const handleViewAcctGenTask = async () => {
         global.logThis("🔴 No tasks saved!", "error");
         await global.sleep(1500);
         global.runMain();
+        return;
       }
     } else {
       global.logThis("🔴 No tasks saved!", "error");
       await global.sleep(1500);
       global.runMain();
+      return;
     }
   } catch (error) {
     console.log(`Error in handleViewAcctGenTask = `, error);

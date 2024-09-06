@@ -12,6 +12,7 @@ export const handleCreateAcctGenTask = async () => {
       global.logThis("No IMAP saved.", "error");
       await global.sleep(1500);
       global.runMain();
+      return;
     } else {
       // Get Task Info
       let ebayGen = await inquirer.prompt([
@@ -90,6 +91,7 @@ export const handleCreateAcctGenTask = async () => {
 
       // Restart main
       global.runMain();
+      return;
     }
   } catch (error) {
     console.error(`Error in handleCreateAcctGenTask:`, error);

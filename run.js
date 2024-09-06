@@ -8,11 +8,10 @@ import { handleEbayManager } from "./modules/eBay/index.js";
 export const run = async () => {
   try {
     // Set title
-    // process.title = `Ebay viewbot | Views: 0 | Watchers: 0 | Fails: 0`;
     updateProcessTitle();
 
+    // Display logo
     logLogo();
-    console.log("");
 
     const answer = await inquirer.prompt([
       {
@@ -35,23 +34,12 @@ export const run = async () => {
     } else if (answer.action === "[3] Settings") {
       await handleSettingsManager();
     } else if (answer.action === "[4] Exit CLI") {
-      console.log("👋 Exiting eBay-viewbot...");
+      console.log("👋 Exiting eBay genie...");
       await sleep(1500);
       console.clear();
       process.exit();
     }
-
-    const taskLength = global.savedConfig.task?.length || 0;
-    let success = global.savedConfig.task?.success || 0;
-    let failed = global.savedConfig.task?.failed || 0;
-
-    // Check if all tasks have been completed (Reset Values)
-    if (taskLength !== undefined && taskLength === success + failed) {
-      success = 0;
-      failed = 0;
-      updateProcessTitle();
-    }
   } catch (error) {
-    console.log(`ERROR = `, error);
+    throw new Error(`Error in run: ${error.message}`);
   }
 };

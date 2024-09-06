@@ -16,3 +16,9 @@ export const urls = {
     testProxy: "https://api.ipify.org/",
   },
 };
+
+// url for upgrade form (address form)
+// https://reg.ebay.com/reg/Upgrade?ru=https%3A%2F%2Fwww.ebay.com%2Fmys%2Fhome%3Fsource%3DGBH
+
+// Home/Reset url
+// https://www.ebay.com/mys/home?source=GBH

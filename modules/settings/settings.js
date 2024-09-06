@@ -21,12 +21,14 @@ export const handleEditSettings = async () => {
         "[2] IMAP",
         "[3] SMS",
         "[4] Webhooks",
+        new inquirer.Separator(),
         "[5] Go Back",
       ],
     },
   ]);
   if (response.action === "[5] Go Back") {
     global.runMain();
+    return;
   } else if (response.action === "[4] Webhooks") {
     global.logThis("🕒 Opening Webhook Manager...", "info");
     // TODO: Webhook
@@ -42,6 +44,7 @@ export const handleEditSettings = async () => {
           "Add SMS Provider",
           "View SMS Providers",
           "Clear All Providers",
+          new inquirer.Separator(),
           "Go Back",
         ],
       },
@@ -98,6 +101,7 @@ export const handleEditSettings = async () => {
       global.logThis("🟢 SMS Provider updated!", "success");
       await global.sleep(2500);
       global.runMain();
+      return;
     } else if (smsRes.action === "View SMS Providers") {
       let saved = await config.get("ebay-cli");
       if (!saved.sms) {
@@ -149,6 +153,7 @@ export const handleEditSettings = async () => {
 
         await global.sleep(5000);
         global.runMain();
+        return;
       }
     } else if (smsRes.action === "Clear All Providers") {
       let saved = await config.get("ebay-cli");
@@ -170,8 +175,10 @@ export const handleEditSettings = async () => {
 
       await global.sleep(2500);
       global.runMain();
+      return;
     } else if (smsRes.action === "Go Back") {
       global.runMain();
+      return;
     }
   } else if (response.action === "[1] Captcha") {
     let captchaRes = await inquirer.prompt([
@@ -183,6 +190,7 @@ export const handleEditSettings = async () => {
           "Add Captcha Provider",
           "View saved Captcha Providers",
           "Clear All Providers",
+          new inquirer.Separator(),
           "Go Back",
         ],
       },
@@ -222,6 +230,7 @@ export const handleEditSettings = async () => {
       global.logThis("🟢 Captcha Provider updated!", "success");
       await global.sleep(2500);
       global.runMain();
+      return;
     } else if (captchaRes.action === "View saved Captcha Providers") {
       let saved = await config.get("ebay-cli");
       if (!saved.captcha) {
@@ -235,6 +244,7 @@ export const handleEditSettings = async () => {
 
       await global.sleep(5000);
       global.runMain();
+      return;
     } else if (captchaRes.action === "Clear All Providers") {
       let saved = await config.get("ebay-cli");
       if (saved.captcha) {
@@ -251,8 +261,10 @@ export const handleEditSettings = async () => {
 
       await global.sleep(2500);
       global.runMain();
+      return;
     } else if (captchaRes.action === "Go Back") {
       global.runMain();
+      return;
     }
   } else if (response.action === "[2] IMAP") {
     let imapRes = await inquirer.prompt([
@@ -264,6 +276,7 @@ export const handleEditSettings = async () => {
           "Add IMAP Provider",
           "View saved IMAP Providers",
           "Clear All Providers",
+          new inquirer.Separator(),
           "Go Back",
         ],
       },
@@ -344,6 +357,7 @@ export const handleEditSettings = async () => {
       global.logThis("🟢 IMAP Provider added!", "success");
       await global.sleep(2500);
       global.runMain();
+      return;
 
       // View saved IMAP Providers
     } else if (imapRes.action === "View saved IMAP Providers") {
@@ -356,6 +370,7 @@ export const handleEditSettings = async () => {
       }
       await global.sleep(5000);
       global.runMain();
+      return;
 
       // Clear All Providers
     } else if (imapRes.action === "Clear All Providers") {
@@ -369,9 +384,11 @@ export const handleEditSettings = async () => {
       }
       await global.sleep(2500);
       global.runMain();
+      return;
       // Go Back
     } else if (imapRes.action === "Go Back") {
       global.runMain();
+      return;
     }
   }
 };

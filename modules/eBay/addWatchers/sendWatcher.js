@@ -1,8 +1,4 @@
-import {
-  logger,
-  processAccountUpdate,
-  updateAccount,
-} from "../../../helpers.js";
+import { logger, processAccountUpdate } from "../../../helpers.js";
 import { simulateHumanClick } from "../../../utilities/botProtectionHelpers.js";
 import { handleCaptcha } from "../../../utilities/captchaHandler.js";
 import { createBrowser } from "../../../utilities/createBrowser.js";
@@ -338,6 +334,9 @@ async function logout(page, module, i) {
   await page.goto(urls.ebayUrls.logoutPage);
 }
 
+// ? If need to handle re-login..
+// If it dosen't ask for text to phone number on account, were GOOD
+// If it does, either go change the phone number on account OR add 2FA with auth app and make a function to read that!
 async function blockedBySMS(page, module) {
   logger(module, `Checking for SMS page..`, "info");
   const smsVerificationNeeded = urls.ebayUrls.smsVerificationPage;

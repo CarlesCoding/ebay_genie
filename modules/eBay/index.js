@@ -27,5 +27,6 @@ export const handleEbayManager = async () => {
     await handleAccountGen();
   } else if (response.action === "[4] Go Back") {
     global.runMain();
+    return;
   }
 };

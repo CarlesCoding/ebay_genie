@@ -1,7 +1,7 @@
 import inquirer from "inquirer";
 import fs from "fs/promises";
-import { getFilePath } from "../../../helpers.js";
 import path from "path";
+import { deleteData } from "../../../helpers.js";
 
 export const handleDeleteProxies = async () => {
   const response = await inquirer.prompt([
@@ -12,25 +12,10 @@ export const handleDeleteProxies = async () => {
     },
   ]);
 
-  const { deleteAll } = response;
-
-  if (deleteAll) {
-    // Get Proxy File
-    const file = getFilePath("proxies");
-    const filePath = path.join(process.cwd(), file);
-
-    global.logThis("Deleting all saved proxies...", "info");
-
-    // Delete everything in the file
-    await fs.writeFile(filePath, "");
-
-    global.logThis("Successfully deleted all saved proxies!", "success");
-
-    await sleep(2000);
-
-    global.runMain();
-  } else {
-    // Restart the program
-    global.runMain();
+  if (response.deleteAll) {
+    await deleteData("proxies");
   }
+
+  global.runMain();
+  return;
 };

@@ -1,4 +1,4 @@
-import { getAccounts } from "../../../helpers.js";
+import { getAllSavedAccounts } from "../../../helpers.js";
 import { urls } from "../../../utilities/urls.js";
 
 export const questions = [
@@ -11,7 +11,7 @@ export const questions = [
         return "Please enter a number.";
       }
 
-      const accounts = await getAccounts();
+      const accounts = await getAllSavedAccounts();
 
       if (value < 1 || value > accounts.length) {
         return `Please enter a number between 1 and ${accounts.length} Or generate more accounts.`;

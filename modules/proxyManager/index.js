@@ -15,10 +15,10 @@ export const handleProxyManager = async () => {
       choices: [
         "[1] Test All",
         "[2] View All Saved",
-        new inquirer.Separator(),
         "[3] Add Proxies",
         "[4] Delete All Saved",
         "[5] Get Free Proxies",
+        new inquirer.Separator(),
         "[6] Go Back",
       ],
     },
@@ -27,7 +27,7 @@ export const handleProxyManager = async () => {
   if (response.action === "[1] Test All") {
     await handelProxyValidator();
   } else if (response.action === "[2] View All Saved") {
-    await handleViewProxies(); // MAYBE IN A TABLE - 'proxy' - 'status (Alive || Dead) - 'latency'
+    await handleViewProxies();
   } else if (response.action === "[3] Add Proxies") {
     await handleAddProxies();
   } else if (response.action === "[4] Delete All Saved") {
@@ -36,5 +36,6 @@ export const handleProxyManager = async () => {
     await handelGetProxies();
   } else if (response.action === "[6] Go Back") {
     global.runMain();
+    return;
   }
 };
