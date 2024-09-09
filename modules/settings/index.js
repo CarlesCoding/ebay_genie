@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import { handleEditSettings } from "./settings.js";
 import config from "../../config/config.js";
+import { handleImportExport } from "./handleImportExport.js";
 
 export const handleSettingsManager = async () => {
   let response = await inquirer.prompt([
@@ -11,8 +12,9 @@ export const handleSettingsManager = async () => {
       choices: [
         "[1] Edit Settings",
         "[2] Force Refresh Configuration",
+        "[3] Import/Export Settings",
         new inquirer.Separator(),
-        "[3] Go Back",
+        "[4] Go Back",
       ],
     },
   ]);
@@ -26,7 +28,9 @@ export const handleSettingsManager = async () => {
     await sleep(1500);
     global.runMain();
     return;
-  } else if (response.action === "[3] Go Back") {
+  } else if (response.action === "[3] Import/Export Settings") {
+    handleImportExport();
+  } else if (response.action === "[4] Go Back") {
     global.runMain();
     return;
   }

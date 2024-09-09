@@ -7,6 +7,9 @@ import { handleEbayManager } from "./modules/eBay/index.js";
 
 export const run = async () => {
   try {
+    // Clear console
+    console.clear();
+
     // Set title
     updateProcessTitle();
 

@@ -43,6 +43,7 @@ const paths = envPaths(projectName);
 const config = new Conf({
   projectName: projectName,
   cwd: paths.config,
+  defaults: defaultConfig,
 });
 
 export default config;
