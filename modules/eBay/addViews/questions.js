@@ -1,8 +1,6 @@
-import { readJsonFile } from "../../../helpers.js";
+import config from "../../../config/config.js";
 
-const data = await readJsonFile("./config/config.json");
-
-const MAX_VIEWS = data.MAX_VIEWS;
+const MAX_VIEWS = config.get("MAX_VIEWS");
 
 export const questions = [
   {

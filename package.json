@@ -21,6 +21,7 @@
     "gradient-string": "^2.0.2",
     "https-proxy-agent": "^7.0.4",
     "inquirer": "^9.2.19",
+    "joi": "^17.13.3",
     "locate-chrome": "^0.1.1",
     "nanoid": "^5.0.7",
     "node-fetch": "^3.3.2",

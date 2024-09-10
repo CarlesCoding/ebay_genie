@@ -1,8 +1,10 @@
 import inquirer from "inquirer";
 import { questions } from "./questions.js";
-import { readJsonFile, getArrayOfAccounts, logger } from "../../../helpers.js";
+import { getArrayOfAccounts, logger } from "../../../helpers.js";
 import { sendWatcher } from "./sendWatcher.js";
-const { MAX_CONCURRENT_TASKS } = await readJsonFile("./config/config.json");
+import config from "../../../config/config.js";
+
+const MAX_CONCURRENT_TASKS = config.get("MAX_CONCURRENT_TASKS");
 
 export const handleAddWatchers = async () => {
   const answers = await inquirer.prompt(questions);

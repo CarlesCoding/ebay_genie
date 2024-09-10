@@ -16,8 +16,8 @@ export const handleProxyManager = async () => {
         "[1] Test All",
         "[2] View All Saved",
         "[3] Add Proxies",
-        "[4] Delete All Saved",
-        "[5] Get Free Proxies",
+        "[4] Get Free Proxies",
+        "[5] Delete All Saved",
         new inquirer.Separator(),
         "[6] Go Back",
       ],
@@ -30,10 +30,10 @@ export const handleProxyManager = async () => {
     await handleViewProxies();
   } else if (response.action === "[3] Add Proxies") {
     await handleAddProxies();
-  } else if (response.action === "[4] Delete All Saved") {
-    await handleDeleteProxies();
-  } else if (response.action === "[5] Get Free Proxies") {
+  } else if (response.action === "[4] Get Free Proxies") {
     await handelGetProxies();
+  } else if (response.action === "[5] Delete All Saved") {
+    await handleDeleteProxies();
   } else if (response.action === "[6] Go Back") {
     global.runMain();
     return;

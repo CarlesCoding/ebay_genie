@@ -105,7 +105,7 @@ export const handleEditSettings = async () => {
     } else if (smsRes.action === "View SMS Providers") {
       let saved = await config.get("ebay-cli");
       if (!saved.sms) {
-        global.logThis("🔴 No SMS Providers saved!", "error");
+        global.logThis("❌ No SMS Providers saved!", "error");
       } else {
         global.logThis("🟢 SMS Providers:", "success");
 
@@ -234,7 +234,7 @@ export const handleEditSettings = async () => {
     } else if (captchaRes.action === "View saved Captcha Providers") {
       let saved = await config.get("ebay-cli");
       if (!saved.captcha) {
-        global.logThis("🔴 No Captcha Providers saved!", "error");
+        global.logThis("❌ No Captcha Providers saved!", "error");
       } else {
         global.logThis("🟢 Captcha Providers:", "success");
         global.logThis("2captcha: " + saved.captcha.twocaptcha, "info");
@@ -256,7 +256,7 @@ export const handleEditSettings = async () => {
         config.set("ebay-cli", saved);
         global.logThis("🟢 Captcha Providers cleared!", "success");
       } else {
-        global.logThis("🔴 No Captcha Providers saved!", "error");
+        global.logThis("❌ No Captcha Providers saved!", "error");
       }
 
       await global.sleep(2500);
@@ -363,7 +363,7 @@ export const handleEditSettings = async () => {
     } else if (imapRes.action === "View saved IMAP Providers") {
       let saved = await config.get("ebay-cli");
       if (!saved.imap || saved.imap.length === 0) {
-        global.logThis("🔴 No IMAP Providers saved!", "error");
+        global.logThis("❌ No IMAP Providers saved!", "error");
       } else {
         global.logThis(`🟢 IMAP Providers (${saved.imap.length}):`, "success");
         console.table(saved.imap, ["provider", "email", "password"]);
@@ -380,7 +380,7 @@ export const handleEditSettings = async () => {
         config.set("ebay-cli", saved);
         global.logThis("🟢 IMAP Providers cleared!", "success");
       } else {
-        global.logThis("🔴 No IMAP Providers saved!", "error");
+        global.logThis("❌ No IMAP Providers saved!", "error");
       }
       await global.sleep(2500);
       global.runMain();

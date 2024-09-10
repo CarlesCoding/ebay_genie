@@ -30,7 +30,7 @@ export const handleAccountGen = async () => {
       });
 
       if (taskArray.length === 0)
-        throw new Error("🔴 No eBay Gen tasks found!");
+        throw new Error("❌ No eBay Gen tasks found!");
 
       // Get an address for every task in one go (prevents from being rate limited by the db.)
       const addressArray = await connectAndExecuteAddressQuery(
@@ -38,10 +38,10 @@ export const handleAccountGen = async () => {
       );
 
       if (addressArray.length !== taskArray.length)
-        throw new Error("🔴 Not all tasks have an address!");
+        throw new Error("❌ Not all tasks have an address!");
 
       if (addressArray.length === 0)
-        throw new Error("🔴 Failed to get addresses!");
+        throw new Error("❌ Failed to get addresses!");
 
       const runTasks = async () => {
         const promises = [];
@@ -62,7 +62,7 @@ export const handleAccountGen = async () => {
       //* -- Temp --
       global.logThis("🟢 All tasks completed", "success");
     } else {
-      global.logThis("🔴 No tasks found!", "error");
+      global.logThis("❌ No tasks found!", "error");
     }
 
     // await handelRunAcctGenTask();

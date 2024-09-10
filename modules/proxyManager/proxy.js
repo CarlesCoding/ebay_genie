@@ -8,8 +8,9 @@ import {
 } from "../../helpers.js";
 import { axiosTestProxy } from "../../services/axios.js";
 import { urls } from "../../utilities/urls.js";
-const data = await readJsonFile("./config/config.json");
-const timeout = data.CONNECTION_TIMEOUT_LIMIT;
+import config from "../../config/config.js";
+
+const timeout = config.get("CONNECTION_TIMEOUT_LIMIT");
 
 /*
   Get proxy geolocation: https://reallyfreegeoip.org/json/66.63.167.226

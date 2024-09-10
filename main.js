@@ -1,8 +1,7 @@
 // #! /usr/bin/env node
 
 import { run } from "./run.js";
-import config from "./config/config.js";
-import { defaultConfig } from "./config/config.js";
+import config, { validateAndSaveConfig } from "./config/config.js";
 import { version } from "./utilities/logo.js";
 import { log } from "./helpers.js";
 import { createNeededFiles } from "./helpers.js";
@@ -16,19 +15,28 @@ const main = async () => {
   global.runMain = run;
   global.sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  // Check for saved config, if none create it with defaults
+  // Check if no saved config, then set up with defaults
   if (!global.savedConfig) {
-    config.set("ebay-cli", defaultConfig);
-    global.savedConfig = config.get("ebay-cli");
+    log(`🔵 No saved config found. Setting up defaults...`, "info");
 
-    /* if no config file, means its the first time running the app, Check and add necessary files */
+    try {
+      const defaultConfig = validateAndSaveConfig({});
+      global.savedConfig = defaultConfig;
+    } catch (error) {
+      log(`❌ Error setting up default config: ${error.message}`, "error");
+      return;
+    }
+
+    // Create necessary files for the first run
     createNeededFiles();
   }
 
-  // log to user
+  // Log to user
   log(`🔵 Verifying system...`, "info");
   await sleep(1000);
   log("🟢 System verified, welcome back!", "success");
+
+  // Start the main run function
   run();
 };
 

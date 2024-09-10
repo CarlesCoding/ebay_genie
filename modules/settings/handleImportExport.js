@@ -3,8 +3,8 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import inquirer from "inquirer";
-import config from "../../config/config.js";
-import { validateConfig } from "../../config/validateConfig.js";
+import config, { validateAndSaveConfig } from "../../config/config.js";
+import configSchema from "../../config/configSchema.js";
 
 export const handleImportExport = async () => {
   let response = await inquirer.prompt([
@@ -41,7 +41,7 @@ export const handleImportExport = async () => {
     return;
   }
 
-  await sleep(2000);
+  await sleep(5000);
   global.runMain();
   return;
 };
@@ -50,31 +50,56 @@ const importConfFile = (filePath) => {
   try {
     const absolutePath = path.resolve(filePath);
     const configFile = JSON.parse(fs.readFileSync(absolutePath, "utf8"));
-    const isValid = validateConfig(configFile);
 
-    if (isValid.valid) {
-      config.set("ebay-cli", configFile);
-      global.savedConfig = config.get("ebay-cli"); // Update global config
-      log("🟢 Config imported successfully!", "success");
-      return;
-    } else {
-      log(`Invalid configuration format: ${isValid.errorMessage}`, "error");
-    }
+    // Validate the configuration using the function
+    const validatedConfig = validateAndSaveConfig(configFile);
+
+    // If validation is successful, set the config
+    config.set("ebay-cli", validatedConfig);
+    global.savedConfig = config.get("ebay-cli"); // Update global config
+    log("🟢 Config imported successfully!", "success");
+    return;
   } catch (error) {
-    throw new Error(`Error importing config: ${error.message}`);
+    log(`❌ Invalid configuration format: ${error.message}`, "error");
+    return;
   }
 };
 
 const exportConfFile = () => {
   const downloadsFolder = getDownloadsFolder();
-  const filePath = path.join(downloadsFolder, "ebay-cli-config.json");
+  const now = new Date();
+  const month = now.getMonth() + 1; // Months are zero-based, so +1
+  const day = now.getDate();
+  const year = now.getFullYear();
 
+  const fileName = `ebay-cli-config-${month}-${day}-${year}.json`;
+  const filePath = path.join(downloadsFolder, fileName);
   try {
     const currentConfig = config.get("ebay-cli");
+    if (!currentConfig) {
+      log(`❌ No config found to export.`, "error");
+      return;
+    }
+
+    // Validate the configuration
+    const { error } = configSchema.validate(currentConfig, {
+      abortEarly: false,
+    });
+    if (error) {
+      log(
+        `❌ Invalid configuration: ${error.details
+          .map((detail) => detail.message)
+          .join(", ")}`,
+        "error"
+      );
+      return;
+    }
+
     fs.writeFileSync(filePath, JSON.stringify(currentConfig, null, 2));
     log(`🟢 Config exported to users downloads folder!`, "success");
   } catch (error) {
-    log(`Error exporting config: ${error.message}`, "error");
+    log(`❌ Error exporting config: ${error.message}`, "error");
+    return;
   }
 };
 

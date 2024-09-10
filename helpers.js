@@ -326,6 +326,12 @@ export const generatePassword = (characterAmount) => {
 // Custom sleep function
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Restart main function
+export const restartApp = async (sleepTime) => {
+  await sleep(sleepTime);
+  global.runMain();
+};
+
 // Get random integer function
 export const getRandomInt = (min, max) => {
   min = Math.ceil(min);

@@ -19,7 +19,7 @@ let tokenData = {
 export const initializeTokenData = async () => {
   const saved = await config.get("ebay-cli");
 
-  if (!saved.sms.textverified.bearerToken) {
+  if (!saved?.sms?.textverified?.bearerToken) {
     return;
   }
 

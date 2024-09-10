@@ -23,13 +23,13 @@ export const handleViewAcctGenTask = async () => {
           "useProxies",
         ]);
       } else {
-        global.logThis("🔴 No tasks saved!", "error");
+        global.logThis("❌ No tasks saved!", "error");
         await global.sleep(1500);
         global.runMain();
         return;
       }
     } else {
-      global.logThis("🔴 No tasks saved!", "error");
+      global.logThis("❌ No tasks saved!", "error");
       await global.sleep(1500);
       global.runMain();
       return;
