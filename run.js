@@ -40,7 +40,7 @@ export const run = async () => {
       console.log("👋 Exiting eBay genie...");
       await sleep(1500);
       console.clear();
-      process.exit();
+      process.exit(1);
     }
   } catch (error) {
     throw new Error(`Error in run: ${error.message}`);

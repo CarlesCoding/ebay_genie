@@ -1,13 +1,11 @@
 class AppError extends Error {
-  constructor(message, statusCode) {
-    super(message); // sets message property to the incoming message
+  constructor(message, code) {
+    super(message, code); // sets message property to the incoming message
 
-    this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
+    this.code = code;
     // All errors made with this AppError class will be operational errors
-    this.isOperational = true; // used to test if error is operational (a error we know) in errorController.js
-
-    Error.captureStackTrace(this, this.constructor); // cleans the appError call from the stacktrace
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 

@@ -20,14 +20,18 @@ export const handleAddWatchers = async () => {
       `[Error in eBay Watchers] -- Task failed: No accounts found.`
     );
 
-  // start task
-  await processWatcherTasks(
-    accounts,
-    answers,
-    succeededTasks,
-    failedTasks,
-    module
-  );
+  try {
+    // start task
+    await processWatcherTasks(
+      accounts,
+      answers,
+      succeededTasks,
+      failedTasks,
+      module
+    );
+  } catch (error) {
+    logger(module, `Watcher Task failed: ${error.message}`, "error");
+  }
 
   logger(
     module,
