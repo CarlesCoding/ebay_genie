@@ -1,26 +1,17 @@
-export default handleError;
+/**
+ * In main functions use "handleError()"
+ * In all the functions try catches inside the main function use "throw new appError()"
+ */
 
-const handleError = (err) => {
+export const handleError = (err) => {
   const env = process.env.NODE_ENV || "development";
 
   // Check if the error is operational
   if (err.isOperational) {
-    // Initialize error message with specific code
-    let errorMessage = "";
+    const errorType = extractErrorType(err);
 
-    switch (err.code) {
-      case "E_FATAL":
-        errorMessage = `FATAL OPERATIONAL ERROR: ${err.message}`;
-        break;
-      case "E_NETWORK":
-        errorMessage = `NETWORK ERROR: ${err.message}`;
-        break;
-      case "E_DATABASE":
-        errorMessage = `DATABASE ERROR: ${err.message}`;
-        break;
-      default:
-        errorMessage = `Operational Error: ${err.message}`;
-    }
+    // Initialize error message with specific code
+    let errorMessage = `${errorType} ERROR: ${err.message}`;
 
     // Append stack trace in development
     if (env === "development") {
@@ -51,6 +42,19 @@ const handleError = (err) => {
   }
 };
 
+export default handleError;
+
+// Extract the error type
+const extractErrorType = (error) => {
+  let errorType = "";
+  let errorCode = error.code;
+  if (!errorCode) return (errorType = `Operational`);
+  errorType = errorCode.split("_")[1];
+  if (errorType === "FATAL") errorType += ` Operational`;
+  return errorType;
+};
+
+// ********** List of error codes **********
 const errorCodeEnums = [
   "E_FATAL", // Fatal error that prevents the application from continuing
   "E_NETWORK", // Network-related issues
@@ -87,19 +91,3 @@ const errorCodeEnums = [
   "E_PROTOCOL", // Protocol-related errors
   "E_FEATURE", // Errors related to missing or failed features
 ];
-switch (err.code) {
-  case "E_FATAL":
-    errorMessage = `FATAL OPERATIONAL ERROR: ${err.message}`;
-    break;
-  case "E_NETWORK":
-    errorMessage = `NETWORK ERROR: ${err.message}`;
-    break;
-  case "E_DATABASE":
-    errorMessage = `DATABASE ERROR: ${err.message}`;
-    break;
-  default:
-    errorMessage = `Operational Error: ${err.message}`;
-}
-
-// Create the message dynamically
-const em = (errorCode) => {};

@@ -14,7 +14,7 @@ const config = new Conf({
   cwd: paths.config,
 });
 
-export const validateAndSaveConfig = (newConfig) => {
+export const validateAndSaveConfig = (newConfig = {}) => {
   // Validate the incoming config with Joi
   const { error, value: validatedConfig } = configSchema.validate(newConfig, {
     abortEarly: false,

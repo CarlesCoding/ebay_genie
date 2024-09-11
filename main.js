@@ -5,6 +5,7 @@ import config, { validateAndSaveConfig } from "./config/config.js";
 import { version } from "./utilities/logo.js";
 import { log } from "./helpers.js";
 import { createNeededFiles } from "./helpers.js";
+import catchAsyncErrors from "./utilities/errorHandling/catchAsyncErrors.js";
 
 const main = async () => {
   // Set Globals
@@ -20,16 +21,16 @@ const main = async () => {
     log(`🔵 No saved config found. Setting up defaults...`, "info");
 
     try {
-      const defaultConfig = validateAndSaveConfig({});
+      const defaultConfig = validateAndSaveConfig();
       global.savedConfig = defaultConfig;
     } catch (error) {
       log(`❌ Error setting up default config: ${error.message}`, "error");
-      return;
+      process.exit(1); // Exit the process after handling the error
     }
-
-    // Create necessary files for the first run
-    createNeededFiles();
   }
+
+  // Create necessary files for the first run
+  await catchAsyncErrors(createNeededFiles)();
 
   // Log to user
   log(`🔵 Verifying system...`, "info");

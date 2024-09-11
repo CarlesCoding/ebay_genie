@@ -6,6 +6,7 @@ import { version } from "./utilities/logo.js";
 import { countryCodes } from "./utilities/statesAndCodes.js";
 import UserAgent from "user-agents";
 import lockfile from "proper-lockfile";
+import AppError from "./utilities/errorHandling/appError.js";
 
 // -------------------- Update process title --------------------
 export const updateProcessTitle = () => {
@@ -65,21 +66,56 @@ export const createNeededFiles = async () => {
     },
   ];
 
-  // Check for file existence & add only the missing files into the next step.
-  const filesNotExisting = await Promise.all(
-    filesToCreate.map(async ({ path, content }) => {
-      const fileExists = await checkFileExist(path);
-      return !fileExists ? { path, content } : null;
-    })
-  );
+  try {
+    // Check for file existence & add only the missing files into the next step.
+    // const filesNotExisting = await Promise.all(
+    //   filesToCreate.map(async ({ path, content }) => {
+    //     const fileExists = await checkFileExist(path);
+    //     return !fileExists ? { path, content } : null;
+    //   })
+    // );
+    const filesNotExisting = await Promise.all(
+      filesToCreate.map(async ({ path, content }) => {
+        try {
+          const fileExists = await checkFileExist(path);
+          return !fileExists ? { path, content } : null;
+        } catch (error) {
+          // Handle specific file check errors
+          throw new CustomError(
+            `Error checking file existence at ${path}: ${error.message}`,
+            "E_FILE_CHECK"
+          );
+        }
+      })
+    );
 
-  // Filter out any `null` results (files that already exist)
-  const filesToWrite = filesNotExisting.filter((file) => file !== null);
+    // Filter out any `null` results (files that already exist)
+    const filesToWrite = filesNotExisting.filter((file) => file !== null);
 
-  // Create missing files
-  await Promise.all(
-    filesToWrite.map(({ path, content }) => writeJsonFile(path, content))
-  );
+    // Create missing files
+    // await Promise.all(
+    //   filesToWrite.map(({ path, content }) => writeJsonFile(path, content))
+    // );
+    await Promise.all(
+      filesToWrite.map(async ({ path, content }) => {
+        try {
+          await writeJsonFile(path, content);
+        } catch (error) {
+          // Handle specific file write errors
+          throw new CustomError(
+            `Error writing file at ${path}: ${error.message}`,
+            "E_FILE_WRITE"
+          );
+        }
+      })
+    );
+  } catch (error) {
+    // Handle any other errors from the main function
+    throw new AppError(
+      `Error creating needed files: ${error.message}`,
+      "E_FILE_CREATION"
+    );
+  }
 };
 
 // ------------------------ Data Files (accounts & proxies) --------------------------
