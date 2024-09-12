@@ -1,4 +1,5 @@
 import config from "../../../../config/config.js";
+import { sleep } from "../../../../helpers.js";
 
 export const handleViewAcctGenTask = async () => {
   try {
@@ -24,13 +25,13 @@ export const handleViewAcctGenTask = async () => {
         ]);
       } else {
         global.logThis("❌ No tasks saved!", "error");
-        await global.sleep(1500);
+        await sleep(1500);
         global.runMain();
         return;
       }
     } else {
       global.logThis("❌ No tasks saved!", "error");
-      await global.sleep(1500);
+      await sleep(1500);
       global.runMain();
       return;
     }

@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { testProxiesConcurrently } from "../proxy.js";
-import { saveData } from "../../../helpers.js";
+import { saveData, sleep } from "../../../helpers.js";
 
 export const handleAddProxies = async () => {
   const response = await inquirer.prompt([

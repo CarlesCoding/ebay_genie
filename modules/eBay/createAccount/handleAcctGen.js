@@ -4,6 +4,7 @@ import { handleViewAcctGenTask } from "./Gen/viewTask.js";
 import { handelRunAcctGenTask } from "./Gen/runTask.js";
 import config from "../../../config/config.js";
 import { connectAndExecuteAddressQuery } from "../../../utilities/db/db.js";
+import { sleep } from "../../../helpers.js";
 
 export const handleAccountGen = async () => {
   const response = await inquirer.prompt([
@@ -76,7 +77,7 @@ export const handleAccountGen = async () => {
     saved = [];
     config.set("ebay-cli.tasks", saved);
     global.logThis("🟢 All task cleared!", "success");
-    await global.sleep(1500);
+    await sleep(1500);
     global.runMain();
     return;
   } else if (response.action === "[5] Go Back") {

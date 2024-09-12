@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import config from "../../../../config/config.js";
 import { v4 as uuidv4 } from "uuid";
+import { sleep } from "../../../../helpers.js";
 
 export const handleCreateAcctGenTask = async () => {
   try {
@@ -10,7 +11,7 @@ export const handleCreateAcctGenTask = async () => {
     // Check if imap is empty
     if (savedImap.length === 0) {
       global.logThis("No IMAP saved.", "error");
-      await global.sleep(1500);
+      await sleep(1500);
       global.runMain();
       return;
     } else {
@@ -87,7 +88,7 @@ export const handleCreateAcctGenTask = async () => {
 
       global.logThis(`🟢 ${ebayGen.taskQty} Tasks created!`, "success");
 
-      await global.sleep(1500);
+      await sleep(1500);
 
       // Restart main
       global.runMain();

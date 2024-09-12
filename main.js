@@ -3,7 +3,7 @@
 import { run } from "./run.js";
 import config, { validateAndSaveConfig } from "./config/config.js";
 import { version } from "./utilities/logo.js";
-import { log } from "./helpers.js";
+import { log, sleep } from "./helpers.js";
 import { createNeededFiles } from "./helpers.js";
 import catchAsyncErrors from "./utilities/errorHandling/catchAsyncErrors.js";
 import AppError from "./utilities/errorHandling/appError.js";
@@ -15,7 +15,6 @@ const main = async () => {
   global.tasks = [];
   global.logThis = log;
   global.runMain = run;
-  global.sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // Check if no saved config, then set up with defaults
   if (!global.savedConfig) {

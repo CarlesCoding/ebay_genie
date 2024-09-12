@@ -1,4 +1,4 @@
-import { saveData } from "../../../helpers.js";
+import { saveData, sleep } from "../../../helpers.js";
 import { getFile, testProxiesConcurrently } from "../proxy.js";
 
 export const validateProxies = async (response) => {

@@ -1,3 +1,4 @@
+import { sleep } from "../../../helpers.js";
 import { getFile } from "../proxy.js";
 
 // ? IDEA: Change proxy obj for better viewing experience
@@ -54,7 +55,7 @@ const displayProxies = async (proxies) => {
   // Display the proxies
   console.table(formattedProxies);
 
-  await global.sleep(10000);
+  await sleep(10000);
   console.clear();
   global.runMain();
   return;

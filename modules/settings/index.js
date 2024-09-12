@@ -2,6 +2,7 @@ import inquirer from "inquirer";
 import { handleEditSettings } from "./settings.js";
 import config from "../../config/config.js";
 import { handleImportExport } from "./handleImportExport.js";
+import { sleep } from "../../helpers.js";
 
 export const handleSettingsManager = async () => {
   let response = await inquirer.prompt([

@@ -6,7 +6,7 @@ import { getSmsActivateBalance } from "../../services/SMS/providers/sms-activate
 import { getFiveSimBalance } from "../../services/SMS/providers/fiveSim.js";
 import { getTextVerifiedBalance } from "../../services/SMS/providers/textVerified.js";
 import { checkAllBalances } from "../../services/SMS/checkAllBalances.js";
-import { shortenApiKey } from "../../helpers.js";
+import { shortenApiKey, sleep } from "../../helpers.js";
 
 // TODO: captchas need saved like sms providers (sharing balance along with key)
 
@@ -99,7 +99,7 @@ export const handleEditSettings = async () => {
 
       config.set("ebay-cli", saved);
       global.logThis("🟢 SMS Provider updated!", "success");
-      await global.sleep(2500);
+      await sleep(2500);
       global.runMain();
       return;
     } else if (smsRes.action === "View SMS Providers") {
@@ -151,7 +151,7 @@ export const handleEditSettings = async () => {
         // Display table
         console.table(displayData);
 
-        await global.sleep(5000);
+        await sleep(5000);
         global.runMain();
         return;
       }
@@ -173,7 +173,7 @@ export const handleEditSettings = async () => {
         config.set("ebay-cli", saved);
       }
 
-      await global.sleep(2500);
+      await sleep(2500);
       global.runMain();
       return;
     } else if (smsRes.action === "Go Back") {
@@ -228,7 +228,7 @@ export const handleEditSettings = async () => {
 
       await config.set("ebay-cli", saved);
       global.logThis("🟢 Captcha Provider updated!", "success");
-      await global.sleep(2500);
+      await sleep(2500);
       global.runMain();
       return;
     } else if (captchaRes.action === "View saved Captcha Providers") {
@@ -242,7 +242,7 @@ export const handleEditSettings = async () => {
         global.logThis("CapSolver: " + saved.captcha.capsolver, "info");
       }
 
-      await global.sleep(5000);
+      await sleep(5000);
       global.runMain();
       return;
     } else if (captchaRes.action === "Clear All Providers") {
@@ -259,7 +259,7 @@ export const handleEditSettings = async () => {
         global.logThis("❌ No Captcha Providers saved!", "error");
       }
 
-      await global.sleep(2500);
+      await sleep(2500);
       global.runMain();
       return;
     } else if (captchaRes.action === "Go Back") {
@@ -355,7 +355,7 @@ export const handleEditSettings = async () => {
       saved.imap.push(obj);
       config.set("ebay-cli", saved);
       global.logThis("🟢 IMAP Provider added!", "success");
-      await global.sleep(2500);
+      await sleep(2500);
       global.runMain();
       return;
 
@@ -368,7 +368,7 @@ export const handleEditSettings = async () => {
         global.logThis(`🟢 IMAP Providers (${saved.imap.length}):`, "success");
         console.table(saved.imap, ["provider", "email", "password"]);
       }
-      await global.sleep(5000);
+      await sleep(5000);
       global.runMain();
       return;
 
@@ -382,7 +382,7 @@ export const handleEditSettings = async () => {
       } else {
         global.logThis("❌ No IMAP Providers saved!", "error");
       }
-      await global.sleep(2500);
+      await sleep(2500);
       global.runMain();
       return;
       // Go Back

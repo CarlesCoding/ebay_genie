@@ -1,4 +1,4 @@
-import { logger } from "../../../helpers.js";
+import { logger, sleep } from "../../../helpers.js";
 import {
   checkFiveSimPhoneNumberStatus,
   finishFiveSimPhoneNumber,
@@ -119,7 +119,7 @@ export const pollForCode = async (phoneData, task, index) => {
       }
 
       // Sleep for 5 seconds before next poll
-      await global.sleep(5000);
+      await sleep(5000);
     }
   } catch (error) {
     logger(
