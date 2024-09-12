@@ -1,7 +1,9 @@
 import { generatePassword, getRandomInt } from "../helpers.js";
 import { faker } from "@faker-js/faker";
-import { getRandomProxy } from "../modules/proxyManager/proxy.js";
+import { fetchRandomProxy } from "../modules/proxyManager/proxy.js";
 import { withCaptchaHandler } from "./captchaHandler.js";
+import AppError from "./errorHandling/appError.js";
+import { sleep } from "../helpers.js";
 
 // Scroll up & down randomly
 // const randomPageScroll = async (page) => {
@@ -62,55 +64,61 @@ import { withCaptchaHandler } from "./captchaHandler.js";
 
 //* NOT TESTED YET (Browser flags bypass this and go spright to captcha page)
 export const randomPageScroll = async (page, speed) => {
-  // Function to scroll the page
-  let scroll = async (args) => {
-    const { speed, duration } = args;
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    const scrollHeight = () => document.body.scrollHeight;
-    const viewHeight = window.innerHeight;
-    const delayTime = speed === "slow" ? 200 : speed === "medium" ? 150 : 100; // Increased delay time for smoother scrolling (by px)
-    const maxScrollIncrement = viewHeight / 10; // Smaller increment for less erratic scrolling
+  try {
+    // Function to scroll the page
+    let scroll = async (args) => {
+      const { speed, duration } = args;
 
-    let currentPosition = window.scrollY;
-    let startTime = Date.now();
+      const scrollHeight = () => document.body.scrollHeight;
+      const viewHeight = window.innerHeight;
+      const delayTime = speed === "slow" ? 200 : speed === "medium" ? 150 : 100; // Increased delay time for smoother scrolling (by px)
+      const maxScrollIncrement = viewHeight / 10; // Smaller increment for less erratic scrolling
 
-    // Function to randomly decide scroll direction and amount
-    const getRandomScrollAmount = () =>
-      Math.floor(Math.random() * maxScrollIncrement);
-    const getRandomDirection = () => (Math.random() > 0.5 ? "down" : "up");
+      let currentPosition = window.scrollY;
+      let startTime = Date.now();
 
-    const shouldStop = () =>
-      currentPosition + viewHeight >= scrollHeight() ||
-      currentPosition <= 0 ||
-      Date.now() - startTime > duration;
+      // Function to randomly decide scroll direction and amount
+      const getRandomScrollAmount = () =>
+        Math.floor(Math.random() * maxScrollIncrement);
+      const getRandomDirection = () => (Math.random() > 0.5 ? "down" : "up");
 
-    while (!shouldStop()) {
-      let direction = getRandomDirection();
-      let scrollAmount = getRandomScrollAmount();
+      const shouldStop = () =>
+        currentPosition + viewHeight >= scrollHeight() ||
+        currentPosition <= 0 ||
+        Date.now() - startTime > duration;
 
-      if (direction === "down") {
-        currentPosition = Math.min(
-          currentPosition + scrollAmount,
-          scrollHeight() - viewHeight
-        );
-      } else {
-        currentPosition = Math.max(currentPosition - scrollAmount, 0);
+      while (!shouldStop()) {
+        let direction = getRandomDirection();
+        let scrollAmount = getRandomScrollAmount();
+
+        if (direction === "down") {
+          currentPosition = Math.min(
+            currentPosition + scrollAmount,
+            scrollHeight() - viewHeight
+          );
+        } else {
+          currentPosition = Math.max(currentPosition - scrollAmount, 0);
+        }
+
+        window.scrollTo(0, currentPosition);
+        await sleep(delayTime);
       }
+    };
 
-      window.scrollTo(0, currentPosition);
-      await delay(delayTime);
-    }
-  };
+    // Determine random duration between 4 to 10 seconds
+    const randomDuration = (Math.floor(Math.random() * 7) + 4) * 1000; // 4 to 10 seconds in milliseconds
 
-  // Determine random duration between 4 to 10 seconds
-  const randomDuration = (Math.floor(Math.random() * 7) + 4) * 1000; // 4 to 10 seconds in milliseconds
+    console.log(`Scrolling page...`);
+    // Execute the scroll with the specified speed and duration
+    await page.evaluate(scroll, { speed: speed, duration: randomDuration });
 
-  console.log(`Scrolling page...`);
-  // Execute the scroll with the specified speed and duration
-  await page.evaluate(scroll, { speed: speed, duration: randomDuration });
-
-  return page;
-
+    return page;
+  } catch (error) {
+    throw new AppError(
+      `Error in randomPageScroll: ${error.message}`,
+      `E_BOTPROTECTION`
+    );
+  }
   // Example usage:
   // await randomPageScroll(page, "slow");
 };
@@ -215,71 +223,90 @@ export const humanTypeAdvanced = async (page, fields) => {
       await typeWithMistypes(field);
     }
   } catch (error) {
-    throw new Error(`Error filling in form: ${error.message}`);
+    throw new AppError(
+      `Error typing like human: ${error.message}`,
+      "E_BOTPROTECTION"
+    );
   }
 };
 
 // Random mouse clicks at different positions on the page with random pauses between clicks
 export const randomPageInteractions = async (page) => {
-  // Additional random interactions (optional)
-  for (let i = 0; i < 5; i++) {
-    const viewport = await page.viewportSize();
-    const x = getRandomInt(0, viewport.width);
-    const y = getRandomInt(0, viewport.height);
+  try {
+    // Additional random interactions (optional)
+    for (let i = 0; i < 5; i++) {
+      const viewport = await page.viewportSize();
+      const x = getRandomInt(0, viewport.width);
+      const y = getRandomInt(0, viewport.height);
 
-    await page.mouse.click(x, y);
-    await page.waitForTimeout(getRandomInt(1000, 3000));
+      await page.mouse.click(x, y);
+      await page.waitForTimeout(getRandomInt(1000, 3000));
+    }
+
+    return page;
+  } catch (error) {
+    throw new AppError(
+      `Error performing random page interactions: ${error.message}`,
+      "E_INTERACTION_FAILED"
+    );
   }
-
-  return page;
 };
 
 // Simulate human-like mouse click
 export const simulateHumanClick = async (page, selector) => {
-  // Evaluate the element's bounding box
-  const rect = await page.evaluate((selector) => {
-    const element = document.querySelector(selector);
-    const { top, left, bottom, right } = element.getBoundingClientRect();
-    return { top, left, bottom, right };
-  }, selector);
+  try {
+    // Evaluate the element's bounding box
+    const rect = await page.evaluate((selector) => {
+      const element = document.querySelector(selector);
+      if (!element)
+        throw new AppError(`Element not found: ${selector}`, "E_BOTPROTECTION");
+      const { top, left, bottom, right } = element.getBoundingClientRect();
+      return { top, left, bottom, right };
+    }, selector);
 
-  // Calculate a random click position within the element
-  const clickPosition = {
-    x: rect.left + Math.random() * (rect.right - rect.left),
-    y: rect.top + Math.random() * (rect.bottom - rect.top),
-  };
+    // Calculate a random click position within the element
+    const clickPosition = {
+      x: rect.left + Math.random() * (rect.right - rect.left),
+      y: rect.top + Math.random() * (rect.bottom - rect.top),
+    };
 
-  // Simulate more human-like mouse movement
-  const moveMouseSmoothly = async (startX, startY, endX, endY) => {
-    const steps = 10;
-    for (let i = 0; i <= steps; i++) {
-      const x =
-        startX + ((endX - startX) * i) / steps + (Math.random() - 0.5) * 2;
-      const y =
-        startY + ((endY - startY) * i) / steps + (Math.random() - 0.5) * 2;
-      await page.mouse.move(x, y);
-      await page.waitForTimeout(50 + Math.random() * 50); // Random delay between movements
-    }
-  };
+    // Simulate more human-like mouse movement
+    const moveMouseSmoothly = async (startX, startY, endX, endY) => {
+      const steps = 10;
+      for (let i = 0; i <= steps; i++) {
+        const x =
+          startX + ((endX - startX) * i) / steps + (Math.random() - 0.5) * 2;
+        const y =
+          startY + ((endY - startY) * i) / steps + (Math.random() - 0.5) * 2;
+        await page.mouse.move(x, y);
+        await page.waitForTimeout(50 + Math.random() * 50); // Random delay between movements
+      }
+    };
 
-  // Get current mouse position
-  const { x: startX, y: startY } = await page.evaluate(() => {
-    return { x: window.scrollX, y: window.scrollY };
-  });
+    // Get current mouse position
+    const { x: startX, y: startY } = await page.evaluate(() => {
+      return { x: window.scrollX, y: window.scrollY };
+    });
 
-  // Move mouse smoothly to the target position
-  await moveMouseSmoothly(startX, startY, clickPosition.x, clickPosition.y);
+    // Move mouse smoothly to the target position
+    await moveMouseSmoothly(startX, startY, clickPosition.x, clickPosition.y);
 
-  // Click at the calculated position
-  await page.mouse.click(clickPosition.x, clickPosition.y, {
-    delay: 100 + Math.random() * 200,
-  });
+    // Click at the calculated position
+    await page.mouse.click(clickPosition.x, clickPosition.y, {
+      delay: 100 + Math.random() * 200,
+    });
+  } catch (error) {
+    throw new AppError(
+      `Error simulating human click: ${error.message}`,
+      "E_BOTPROTECTION"
+    );
+  }
 };
 
 // -------------------------------- Fake account data -------------------------------
 
-// Get new account data with proxy
-export const newAccountData = async (task) => {
+// Generate random user with proxy
+export const generateDummyUser = async (task) => {
   // Generate random user data
   const userData = await generateRandomUserData(task.catchall);
 
@@ -287,20 +314,27 @@ export const newAccountData = async (task) => {
   userData.address = task.address;
 
   if (task.useProxies) {
-    let proxy = await getRandomProxy();
-    userData.proxy = proxy;
+    try {
+      let proxy = await fetchRandomProxy();
+      userData.proxy = proxy;
+    } catch (error) {
+      throw new AppError(
+        `Error getting random proxy when fetching new account data: ${error.message}`,
+        `E_BOTPROTECTION`
+      );
+    }
   }
 
   return userData;
 };
 
 // Random user name
-const getRandomUserName = () => {
+const createRandomUsername = () => {
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
 
   if (firstName === "undefined" || lastName === "undefined") {
-    getRandomUserName();
+    createRandomUsername();
   }
 
   return { firstName, lastName };
@@ -310,7 +344,7 @@ const getRandomUserName = () => {
 export const generateRandomUserData = async (catchall = "gmail.com") => {
   try {
     // Generate random name
-    const user = getRandomUserName();
+    const user = createRandomUsername();
 
     // Generate random name
     const email = `${user.firstName}.${user.lastName}${getRandomInt(
@@ -333,7 +367,7 @@ export const generateRandomUserData = async (catchall = "gmail.com") => {
     const hasUndefined = values.some((value) => value === undefined);
 
     if (hasUndefined) {
-      throw new Error("One or more values are undefined");
+      throw new AppError("One or more values are undefined", `E_VALIDATION`);
     }
 
     return {
@@ -343,8 +377,9 @@ export const generateRandomUserData = async (catchall = "gmail.com") => {
       password,
     };
   } catch (error) {
-    throw new Error(
-      `Error in generateRandomUserData: ${error.message} || ${error}`
+    throw new AppError(
+      `Error generating random user data: ${error.message} || ${error}`,
+      `E_BOTPROTECTION`
     );
   }
 };

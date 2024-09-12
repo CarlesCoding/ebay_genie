@@ -43,6 +43,7 @@ export const run = async () => {
       process.exit(1);
     }
   } catch (error) {
-    throw new Error(`Error in run: ${error.message}`);
+    // throw new Error(`Error in run: ${error.message}`);
+    throw new AppError(`Error in run: ${error.message}`, "E_FATAL");
   }
 };

@@ -6,6 +6,7 @@ import { version } from "./utilities/logo.js";
 import { log } from "./helpers.js";
 import { createNeededFiles } from "./helpers.js";
 import catchAsyncErrors from "./utilities/errorHandling/catchAsyncErrors.js";
+import AppError from "./utilities/errorHandling/appError.js";
 
 const main = async () => {
   // Set Globals
@@ -24,8 +25,10 @@ const main = async () => {
       const defaultConfig = validateAndSaveConfig();
       global.savedConfig = defaultConfig;
     } catch (error) {
-      log(`❌ Error setting up default config: ${error.message}`, "error");
-      process.exit(1); // Exit the process after handling the error
+      throw new AppError(
+        `❌ Error setting up default config: ${error.message}`,
+        "E_FATAL"
+      );
     }
   }
 

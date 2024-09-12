@@ -1,6 +1,7 @@
 import Conf from "conf";
 import envPaths from "env-paths";
 import configSchema from "./configSchema.js";
+import AppError from "../utilities/errorHandling/appError.js";
 
 // Name of the project
 const projectName = "ebay-cli";
@@ -21,10 +22,11 @@ export const validateAndSaveConfig = (newConfig = {}) => {
   });
 
   if (error) {
-    throw new Error(
+    throw new AppError(
       `Configuration validation failed: ${error.details
         .map((e) => e.message)
-        .join(", ")}`
+        .join(", ")}`,
+      `E_CONFIG`
     );
   }
 

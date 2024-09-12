@@ -1,4 +1,5 @@
 import { logger } from "../helpers.js";
+import AppError from "./errorHandling/appError.js";
 import { urls } from "./urls.js";
 
 //  -------------------------- Ebay Watcher --------------------------
@@ -84,7 +85,10 @@ export const handleCaptcha = async (page, module, i) => {
       throw new Error(`Failed to solve captcha`);
     }
   } catch (error) {
-    throw Error();
+    throw new AppError(
+      `[Task #${i}] Failed to solve captcha. ${error.message}`,
+      `E_CAPTCHA`
+    );
   }
   await page.waitForNavigation();
   logger(module, `[Task #${i}] CAPTCHA solved,`, "success");
@@ -134,7 +138,7 @@ export const monitorAndSolveCaptcha = (page, i, module, note) => {
           );
         } else {
           console.log(`Error solving captcha`);
-          throw new Error(`Error solving captcha`);
+          throw new AppError(`Error solving captcha`, `E_CAPTCHA`);
         }
       }
     });
@@ -142,7 +146,11 @@ export const monitorAndSolveCaptcha = (page, i, module, note) => {
 
   // Run handleCaptcha in a non-blocking manner
   handleCaptcha().catch((error) => {
-    console.error(`Failed to solve captcha: ${error.message}`);
+    // console.error(`Failed to solve captcha: ${error.message}`);
+    throw new AppError(
+      `Failed to solve captcha: ${error.message}`,
+      `E_CAPTCHA`
+    );
   });
 };
 
@@ -157,32 +165,37 @@ export const withCaptchaHandler = async (page, action) => {
   try {
     await action();
   } catch (error) {
-    console.error("Error during action:", error.message); // Log the error
-    throw new Error("Failed to perform action"); // Rethrow to propagate the error
+    throw new AppError(
+      `Failed to perform action: ${error.message}`,
+      `E_CAPTCHA`
+    );
+    // Rethrow to propagate the error
   }
 
   try {
     await solveCaptcha(page); // Attempt to solve the captcha
   } catch (error) {
-    console.error("Error during captcha solving:", error.message); // Log captcha errors
-    throw new Error("Failed to solve captcha");
+    throw new AppError("Failed to solve captcha", "E_CAPTCHA");
   }
 };
 
 // Solve Captcha (used in withCaptchaHandler())
+
 const solveCaptcha = async (page) => {
-  const hasCaptcha = await page.$(".g-recaptcha, .h-captcha");
-  if (hasCaptcha) {
+  const captchaSelector = ".g-recaptcha, .h-captcha";
+
+  if (await page.$(captchaSelector)) {
     console.log("Captcha detected, solving...");
-    const result = await page.solveRecaptchas();
-    if (result.solved) {
-      console.log("Captcha solved!");
-      return true;
-    } else {
-      console.error("Failed to solve captcha");
-      return false;
+
+    const { solved } = await page.solveRecaptchas();
+
+    if (!solved) {
+      throw new AppError("Failed to solve captcha", "E_CAPTCHA");
     }
+
+    console.log("Captcha solved!");
   }
+
   return true;
 };
 

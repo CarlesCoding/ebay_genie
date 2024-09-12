@@ -67,7 +67,7 @@ export const extractProxyInfo = (proxy) => {
   }
 };
 
-export const getRandomProxy = async () => {
+export const fetchRandomProxy = async () => {
   let list = await getFile("proxies");
   let { proxy } = randomItemFromArray(list);
   let formatted = parseProxyString(proxy);
@@ -77,7 +77,7 @@ export const getRandomProxy = async () => {
 export const fetchWithProxies = async (url, headers) => {
   try {
     // Get a random proxy
-    const proxy = await getRandomProxy();
+    const proxy = await fetchRandomProxy();
 
     // Create a new Proxy Agent
     const agent = new HttpsProxyAgent(proxy);
@@ -145,7 +145,7 @@ export const testProxy = async (proxy, validProxies = []) => {
 // Test the traffic is actually being routed through the proxy
 const proxyTrafficTest = async () => {
   try {
-    const proxy = await getRandomProxy();
+    const proxy = await fetchRandomProxy();
 
     // Target website URL
     // const targetUrl = "https://ident.me/ip";

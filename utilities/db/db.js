@@ -1,69 +1,83 @@
 import sqlite3 from "sqlite3";
 import { states } from "../statesAndCodes.js";
+import AppError from "../errorHandling/appError.js";
+import { log } from "../../helpers.js";
 
-export const connectToDb = () => {
-  return new Promise((resolve, reject) => {
-    let db = new sqlite3.Database(
+export const connectToDb = async () => {
+  try {
+    const db = new sqlite3.Database(
       "./utilities/db/addresses_sample.sqlite3",
-      // "./addresses_sample.sqlite3",
-      sqlite3.OPEN_READONLY,
-      (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          global.logThis("🟢 Connected to the SQLite database.", "success");
-          resolve(db);
-        }
-      }
+      sqlite3.OPEN_READONLY
     );
-  });
+    log("🟢 Connected to the SQLite database.", "success");
+    return db;
+  } catch (error) {
+    throw new AppError(
+      `Error connecting to database: ${error.message}`,
+      "E_DATABASE"
+    );
+  }
 };
 
 // Query the database
 export const executeAddressQuery = async (addressQty = 1, db) => {
   console.log("Executing query...", addressQty);
   const sqlQuery = `SELECT * FROM addresses ORDER BY RANDOM() LIMIT ${addressQty}`;
+
   try {
-    return await new Promise((resolve, reject) => {
+    const rows = await new Promise((resolve, reject) => {
       db.serialize(() => {
         db.all(sqlQuery, (err, rows) => {
           if (err) {
-            console.error(err.message);
-          } else {
-            const modifiedRows = rows.map((row) => {
-              let modifiedRow = {
-                street: `${row.number} ${row.street}`,
-                city: row.city,
-                stateCode: row.state,
-                zipCode: row.zipcode,
-              };
-
-              // Add state to modifiedRow
-              modifiedRow.state = states[modifiedRow.stateCode];
-
-              return modifiedRow;
-            });
-
-            // Return modifiedRows
-            resolve(modifiedRows);
+            return reject(err);
           }
+          resolve(rows);
         });
       });
     });
+
+    const modifiedRows = rows.map((row) => {
+      let modifiedRow = {
+        street: `${row.number} ${row.street}`,
+        city: row.city,
+        stateCode: row.state,
+        zipCode: row.zipcode,
+      };
+
+      // Add state to modifiedRow
+      modifiedRow.state = states[modifiedRow.stateCode];
+
+      return modifiedRow;
+    });
+
+    return modifiedRows;
+  } catch (err) {
+    throw new AppError(`Error executing query: ${err.message}`, "E_DATABASE");
   } finally {
     db.close((err_1) => {
       if (err_1) {
-        return console.error(err_1.message);
+        throw new AppError(
+          `Failed to close the database: ${err_1.message}`,
+          "E_DATABASE"
+        );
+      } else {
+        console.log("Closed the database connection.");
       }
-      console.log("Closed the database connection.");
     });
   }
 };
 
 export const connectAndExecuteAddressQuery = async (addressQty = 1) => {
-  const db = await connectToDb();
-  return await executeAddressQuery(addressQty, db);
+  try {
+    const db = await connectToDb();
+    return await executeAddressQuery(addressQty, db);
+  } catch (error) {
+    throw new AppError(
+      `Error connecting to database: ${error.message}`,
+      "E_DATABASE"
+    );
+  }
 };
 
 // --- Test ---
-// console.log(await executeAddressQuery());
+// console.log(await connectAndExecuteAddressQuery());

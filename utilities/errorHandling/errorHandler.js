@@ -3,6 +3,8 @@
  * In all the functions try catches inside the main function use "throw new appError()"
  */
 
+// TODO: Add an error handler for captcha errors as they need to be treated like fatal errors. The program cant move forward if it cant pass the captcha
+
 export const handleError = (err) => {
   const env = process.env.NODE_ENV || "development";
 
@@ -90,4 +92,10 @@ const errorCodeEnums = [
   "E_NETWORK_TIMEOUT", // Network timeout specific error
   "E_PROTOCOL", // Protocol-related errors
   "E_FEATURE", // Errors related to missing or failed features
+  "E_BROWSER", // Errors related to browser issues
+  "E_CAPTCHA", // Errors related to CAPTCHA solving
+  "E_FORM", // Errors related to form handling
+  "E_BOTPROTECTION", // Errors related to bot protection
+  "E_INTERACTION_FAILED", // Errors related to interaction failed
+  "E_SIMULATE_CLICK", // Errors related to simulate click
 ];

@@ -1,12 +1,13 @@
 import locateChrome from "locate-chrome";
 import {
   extractProxyInfo,
-  getRandomProxy,
+  fetchRandomProxy,
 } from "../modules/proxyManager/proxy.js";
 import { chromium } from "playwright-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import RecaptchaPlugin from "puppeteer-extra-plugin-recaptcha";
 import config from "../config/config.js";
+import AppError from "./errorHandling/appError.js";
 const API_KEY = config.get("ebay-cli.captcha.twocaptcha");
 
 // To set custom user agent, start here:
@@ -50,12 +51,12 @@ export const createBrowser = async (useProxies, user) => {
       if (user.proxy) {
         proxy = user.proxy;
       } else {
-        proxy = await getRandomProxy();
+        proxy = await fetchRandomProxy();
       }
 
       let proxyData = extractProxyInfo(proxy);
 
-      // Playwrite way (may work better with authed proxies)
+      // Playwright way (may work better with authed proxies)
       if (proxyData.username && proxyData.password) {
         browserConfig.proxy = {
           server: `http://${proxyData.ip}:${proxyData.port}`,
@@ -74,6 +75,7 @@ export const createBrowser = async (useProxies, user) => {
 
     return browser;
   } catch (error) {
-    throw new Error(`Error creating browser: ${error.message}`);
+    throw new AppError(`Error creating browser: ${error.message}`, "E_BROWSER");
+    // throw new Error(`Error creating browser: ${error.message}`);
   }
 };

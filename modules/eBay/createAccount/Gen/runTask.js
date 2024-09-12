@@ -2,7 +2,7 @@ import { cancelPhoneNumber } from "../../../../services/SMS/providers/sms-activa
 import { cancelFiveSimPhoneNumber } from "../../../../services/SMS/providers/fiveSim.js";
 import { handleURL } from "../pageUrlHandler.js";
 import { fillPersonalInfoForm } from "../forms.js";
-import { newAccountData } from "../../../../utilities/botProtectionHelpers.js";
+import { generateDummyUser } from "../../../../utilities/botProtectionHelpers.js";
 import { getPhone } from "../../../../services/SMS/handleGetNumber.js";
 import { cancelTextVerifiedPhoneNumber } from "../../../../services/SMS/providers/textVerified.js";
 import { fillAddressForm } from "../forms.js";
@@ -27,7 +27,7 @@ export const handelRunAcctGenTask = async (task, index) => {
       phoneData = await getPhone(task);
 
       // Create new account data
-      user = await newAccountData(task);
+      user = await generateDummyUser(task);
 
       // Create Browser
       browser = await createBrowser(task.useProxies, user);
