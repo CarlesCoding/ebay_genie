@@ -7,6 +7,7 @@ import { log, sleep } from "./helpers.js";
 import { createNeededFiles } from "./helpers.js";
 import catchAsyncErrors from "./utilities/errorHandling/catchAsyncErrors.js";
 import AppError from "./utilities/errorHandling/appError.js";
+import "./utilities/initInquirer.js";
 
 const main = async () => {
   // Set Globals

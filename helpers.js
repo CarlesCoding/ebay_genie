@@ -7,6 +7,8 @@ import { countryCodes } from "./utilities/statesAndCodes.js";
 import UserAgent from "user-agents";
 import lockfile from "proper-lockfile";
 import AppError from "./utilities/errorHandling/appError.js";
+import yoctoSpinner from "yocto-spinner";
+import inquirer from "inquirer";
 
 // -------------------- Update process title --------------------
 export const updateProcessTitle = () => {
@@ -366,6 +368,30 @@ export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const restartApp = async (sleepTime) => {
   await sleep(sleepTime);
   global.runMain();
+};
+
+// Custom loading spinner
+export const createSpinner = (text) => {
+  const spinner = yoctoSpinner({ text: `${text}` }).start();
+  return {
+    success: (message) => spinner.success(message), // Mark spinner as success
+    fail: (message) => spinner.fail(message), // Mark spinner as failure
+    update: (newText) => spinner.update({ text: newText }), // Update spinner text
+    stop: () => spinner.stop(), // Manually stop the spinner
+  };
+};
+
+// Custom press button to continue prompt
+export const promptPressToContinue = async (
+  message = "Press any key to continue..."
+) => {
+  const { key } = await inquirer.prompt({
+    name: "key",
+    type: "press-to-continue",
+    anyKey: true,
+    pressToContinueMessage: message,
+  });
+  return key;
 };
 
 // Get random integer function

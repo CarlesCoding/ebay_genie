@@ -2,11 +2,13 @@ import inquirer from "inquirer";
 import { notDevelopedYet } from "../../utilities/404.js";
 import config from "../../config/config.js";
 import { v4 as uuidv4 } from "uuid";
-import { getSmsActivateBalance } from "../../services/SMS/providers/sms-activate.js";
-import { getFiveSimBalance } from "../../services/SMS/providers/fiveSim.js";
-import { getTextVerifiedBalance } from "../../services/SMS/providers/textVerified.js";
-import { checkAllBalances } from "../../services/SMS/checkAllBalances.js";
-import { shortenApiKey, sleep } from "../../helpers.js";
+import { checkBalance } from "../../services/SMS/checkAllBalances.js";
+import {
+  shortenApiKey,
+  sleep,
+  createSpinner,
+  promptPressToContinue,
+} from "../../helpers.js";
 
 // TODO: captchas need saved like sms providers (sharing balance along with key)
 
@@ -26,6 +28,7 @@ export const handleEditSettings = async () => {
       ],
     },
   ]);
+
   if (response.action === "[5] Go Back") {
     global.runMain();
     return;
@@ -106,55 +109,49 @@ export const handleEditSettings = async () => {
       let saved = await config.get("ebay-cli");
       if (!saved.sms) {
         global.logThis("❌ No SMS Providers saved!", "error");
-      } else {
-        global.logThis("🟢 SMS Providers:", "success");
-
-        // Create table
-        let tableData = Object.entries(saved.sms).map(
-          ([name, { key, balance = 0 }]) => ({
-            Name: name,
-            FullKey: key, // Store the full key
-            ShortenedKey: shortenApiKey(key), // Store the shortened key for display
-            Balance: balance,
-          })
-        );
-
-        // Update tableData with latest balance for each provider
-        const updatedTableData = await Promise.all(
-          tableData.map(async ({ Name, FullKey }) => {
-            const updatedProviderData = await checkAllBalances(
-              Name,
-              FullKey,
-              tableData
-            );
-            return updatedProviderData;
-          })
-        );
-
-        // It creates duplicates.. remove them here
-        const uniqueTableData = updatedTableData
-          .flat()
-          .filter((item, index, self) => {
-            return index === self.findIndex((t) => t.Name === item.Name);
-          });
-
-        // Replace tableData with uniqueTableData
-        tableData = uniqueTableData;
-
-        // Display table with shortened keys
-        let displayData = tableData.map(({ Name, ShortenedKey, Balance }) => ({
-          Name,
-          Key: ShortenedKey,
-          Balance,
-        }));
-
-        // Display table
-        console.table(displayData);
-
-        await sleep(5000);
-        global.runMain();
-        return;
       }
+
+      // Create & Start loading spinner
+      const spinner = createSpinner(`Fetching Providers...`);
+
+      // Create table
+      let tableData = Object.entries(saved.sms).map(
+        ([name, { key, balance = 0 }]) => ({
+          Name: name,
+          FullKey: key, // Store the full key
+          ShortenedKey: shortenApiKey(key), // Store the shortened key for display
+          Balance: balance,
+        })
+      );
+      // Update tableData with the latest balance for each provider directly
+      await Promise.all(
+        tableData.map(async (provider) => {
+          provider.Balance = await checkBalance(
+            provider.Name,
+            provider.FullKey
+          );
+        })
+      );
+
+      // Display table with shortened keys
+      let displayData = tableData.map(({ Name, ShortenedKey, Balance }) => ({
+        Name,
+        Key: ShortenedKey,
+        Balance,
+      }));
+
+      // Stop spinner
+      spinner.stop();
+
+      // Display table
+      global.logThis("🟢 SMS Providers:", "success");
+      console.table(displayData);
+
+      // Prompt user to press any key to continue when done looking at providers
+      await promptPressToContinue();
+
+      global.runMain();
+      return;
     } else if (smsRes.action === "Clear All Providers") {
       let saved = await config.get("ebay-cli");
       global.logThis("🟢 SMS Providers cleared!", "success");

@@ -3,6 +3,8 @@
  * In all the functions try catches inside the main function use "throw new appError()"
  */
 
+import { log } from "../../helpers.js";
+
 // TODO: Add an error handler for captcha errors as they need to be treated like fatal errors. The program cant move forward if it cant pass the captcha
 
 export const handleError = (err) => {
@@ -30,14 +32,12 @@ export const handleError = (err) => {
     }
   } else {
     // Handle unexpected errors
-    let errorMessage = `Unexpected Error: ${err.message}`;
-
     if (env === "development") {
-      errorMessage += `\nStack Trace: ${err.stack}`;
+      err.message += `\nStack Trace: ${err.stack}`;
     }
 
-    log(`❔Unknown Error: ${err.message}`, "error");
-    console.error(`💥 ${errorMessage}`);
+    log(`❔ Unexpected Error: ${err.message}`, "error");
+    // console.error(`💥 ${errorMessage}`);
 
     // Exit process for unexpected errors
     process.exit(1);

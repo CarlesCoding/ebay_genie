@@ -4,6 +4,8 @@ import { sleep, updateProcessTitle } from "./helpers.js";
 import { handleSettingsManager } from "./modules/settings/index.js";
 import { handleProxyManager } from "./modules/proxyManager/index.js";
 import { handleEbayManager } from "./modules/eBay/index.js";
+import AppError from "./utilities/errorHandling/appError.js";
+import handleError from "./utilities/errorHandling/errorHandler.js";
 
 export const run = async () => {
   try {
@@ -43,7 +45,7 @@ export const run = async () => {
       process.exit(1);
     }
   } catch (error) {
-    // throw new Error(`Error in run: ${error.message}`);
-    throw new AppError(`Error in run: ${error.message}`, "E_FATAL");
+    handleError(error);
+    // throw new AppError(`Error in run: ${error.message}`, "E_FATAL");
   }
 };

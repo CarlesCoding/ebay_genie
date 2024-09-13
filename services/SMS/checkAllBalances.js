@@ -1,7 +1,9 @@
 import { getTextVerifiedBalance } from "./providers/textVerified.js";
 
+// TODO: Change this to checkBalance(). handle only balance checking. Extract everything else into a function
+
 // ------------------- Check All Providers Balance --------------------
-export const checkAllBalances = async (name, key, tableData) => {
+export const checkBalance = async (name, key, tableData) => {
   try {
     let balance;
 
@@ -13,14 +15,10 @@ export const checkAllBalances = async (name, key, tableData) => {
 
     let endpoint = balanceEndpoints[name];
 
-    if (name === "textverified") {
-      // Set textverified endpoint to 1, just to get around not having an endpoint for textVerified
-      endpoint = 1;
-    }
+    // Set textverified endpoint to 1, just to get around not having an endpoint for textVerified
+    if (name === "textverified") endpoint = 1;
 
-    if (!endpoint) {
-      return;
-    }
+    if (!endpoint) return;
 
     if (name === "fivesim") {
       const response = await fetch(endpoint, {
@@ -41,15 +39,17 @@ export const checkAllBalances = async (name, key, tableData) => {
       balance = await response;
     }
 
-    const index = tableData.findIndex((item) => item.Name === name);
-
-    if (index !== -1) {
-      tableData[index].Balance = balance !== "0" ? balance : 0;
-    }
-
-    // Save & Return
-    return tableData;
+    return balance;
   } catch (error) {
     throw new Error(`Error checking SMS balance: ${error.message}`);
   }
+};
+
+export const updateTableData = (tableData, name, balance) => {
+  const index = tableData.findIndex((item) => item.Name === name);
+  if (index !== -1) {
+    tableData[index].Balance = balance !== "0" ? balance : 0;
+  }
+  // Save & Return
+  return tableData;
 };

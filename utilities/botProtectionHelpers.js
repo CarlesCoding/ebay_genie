@@ -2,8 +2,8 @@ import { generatePassword, getRandomInt } from "../helpers.js";
 import { faker } from "@faker-js/faker";
 import { fetchRandomProxy } from "../modules/proxyManager/proxy.js";
 import { withCaptchaHandler } from "./captchaHandler.js";
-import AppError from "./errorHandling/appError.js";
 import { sleep } from "../helpers.js";
+import AppError from "./errorHandling/appError.js";
 
 // Scroll up & down randomly
 // const randomPageScroll = async (page) => {
@@ -157,7 +157,6 @@ export const humanTypeAdvanced = async (page, fields) => {
       // Simulate typing with potential mistakes
       for (let i = 0; i < text.length; i++) {
         const char = text[i];
-        console.log(`Typing: ${char}`);
 
         // Randomly decide to mistype
         if (Math.random() < 0.1) {
