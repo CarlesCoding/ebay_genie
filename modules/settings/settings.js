@@ -29,170 +29,22 @@ export const handleEditSettings = async () => {
     },
   ]);
 
-  if (response.action === "[5] Go Back") {
-    global.runMain();
-    return;
-  } else if (response.action === "[4] Webhooks") {
-    global.logThis("🕒 Opening Webhook Manager...", "info");
-    // TODO: Webhook
-    notDevelopedYet();
-    // await handleWebhookManager();
-  } else if (response.action === "[3] SMS") {
-    let smsRes = await inquirer.prompt([
-      {
-        type: "list",
-        name: "action",
-        message: "SMS Settings:",
-        choices: [
-          "Add SMS Provider",
-          "View SMS Providers",
-          "Clear All Providers",
-          new inquirer.Separator(),
-          "Go Back",
-        ],
-      },
-    ]);
-    if (smsRes.action === "Add SMS Provider") {
-      let addNewSmsRes = await inquirer.prompt([
-        {
-          type: "list",
-          name: "action",
-          message: "Select SMS provider to add:",
-          choices: ["5sim.net", "SMS-Activate", "TextVerified"],
-        },
-        {
-          type: "input",
-          name: "apiKey",
-          message: "Paste API Key:",
-        },
-        {
-          type: "input",
-          name: "apiUserName",
-          message: "Paste API Username:",
-          when: (answers) => answers.action === "TextVerified",
-        },
-      ]);
-
-      let saved = await config.get("ebay-cli");
-      if (!saved.sms) {
-        saved.sms = {
-          fivesim: { key: "", balance: 0 },
-          smsactivate: { key: "", balance: 0 },
-          textverified: {
-            key: "",
-            apiUserName: "",
-            bearerToken: "",
-            expiresAt: "",
-            balance: 0,
-          },
-        };
-      } else {
-        if (addNewSmsRes.action === "5sim.net") {
-          saved.sms.fivesim.key = addNewSmsRes.apiKey;
-        } else if (addNewSmsRes.action === "SMS-Activate") {
-          saved.sms.smsactivate.key = addNewSmsRes.apiKey;
-        } else if (addNewSmsRes.action === "TextVerified") {
-          saved.sms.textverified.key = addNewSmsRes.apiKey;
-          saved.sms.textverified.apiUserName = addNewSmsRes.apiUserName;
-          saved.sms.textverified.bearerToken = "";
-          saved.sms.textverified.expiresAt = "";
-        }
-        config.set("ebay-cli", saved);
-      }
-
-      config.set("ebay-cli", saved);
-      global.logThis("🟢 SMS Provider updated!", "success");
-      await sleep(2500);
-      global.runMain();
-      return;
-    } else if (smsRes.action === "View SMS Providers") {
-      let saved = await config.get("ebay-cli");
-      if (!saved.sms) {
-        global.logThis("❌ No SMS Providers saved!", "error");
-      }
-
-      // Create & Start loading spinner
-      const spinner = createSpinner(`Fetching Providers...`);
-
-      // Create table
-      let tableData = Object.entries(saved.sms).map(
-        ([name, { key, balance = 0 }]) => ({
-          Name: name,
-          FullKey: key, // Store the full key
-          ShortenedKey: shortenApiKey(key), // Store the shortened key for display
-          Balance: balance,
-        })
-      );
-      // Update tableData with the latest balance for each provider directly
-      await Promise.all(
-        tableData.map(async (provider) => {
-          provider.Balance = await checkBalance(
-            provider.Name,
-            provider.FullKey
-          );
-        })
-      );
-
-      // Display table with shortened keys
-      let displayData = tableData.map(({ Name, ShortenedKey, Balance }) => ({
-        Name,
-        Key: ShortenedKey,
-        Balance,
-      }));
-
-      // Stop spinner
-      spinner.stop();
-
-      // Display table
-      global.logThis("🟢 SMS Providers:", "success");
-      console.table(displayData);
-
-      // Prompt user to press any key to continue when done looking at providers
-      await promptPressToContinue();
-
-      global.runMain();
-      return;
-    } else if (smsRes.action === "Clear All Providers") {
-      let saved = await config.get("ebay-cli");
-      global.logThis("🟢 SMS Providers cleared!", "success");
-      if (saved.sms) {
-        saved.sms = {
-          fivesim: { key: "", balance: "" },
-          smsactivate: { key: "", balance: "" },
-          textverified: {
-            key: "",
-            apiUserName: "",
-            bearerToken: "",
-            expiresAt: "",
-            balance: "",
-          },
-        };
-        config.set("ebay-cli", saved);
-      }
-
-      await sleep(2500);
-      global.runMain();
-      return;
-    } else if (smsRes.action === "Go Back") {
-      global.runMain();
-      return;
-    }
-  } else if (response.action === "[1] Captcha") {
+  if (response.action === "[1] Captcha") {
     let captchaRes = await inquirer.prompt([
       {
         type: "list",
         name: "action",
         message: "Captcha Manager:",
         choices: [
-          "Add Captcha Provider",
-          "View saved Captcha Providers",
-          "Clear All Providers",
+          "[1] Add Captcha Provider",
+          "[2] View saved Captcha Providers",
+          "[3] Clear All Providers",
           new inquirer.Separator(),
-          "Go Back",
+          "[4] Go Back",
         ],
       },
     ]);
-    if (captchaRes.action === "Add Captcha Provider") {
+    if (captchaRes.action === "[1] Add Captcha Provider") {
       let captchaRes2 = await inquirer.prompt([
         {
           type: "list",
@@ -228,7 +80,7 @@ export const handleEditSettings = async () => {
       await sleep(2500);
       global.runMain();
       return;
-    } else if (captchaRes.action === "View saved Captcha Providers") {
+    } else if (captchaRes.action === "[2] View saved Captcha Providers") {
       let saved = await config.get("ebay-cli");
       if (!saved.captcha) {
         global.logThis("❌ No Captcha Providers saved!", "error");
@@ -242,7 +94,7 @@ export const handleEditSettings = async () => {
       await sleep(5000);
       global.runMain();
       return;
-    } else if (captchaRes.action === "Clear All Providers") {
+    } else if (captchaRes.action === "[3] Clear All Providers") {
       let saved = await config.get("ebay-cli");
       if (saved.captcha) {
         saved.captcha = {
@@ -259,7 +111,7 @@ export const handleEditSettings = async () => {
       await sleep(2500);
       global.runMain();
       return;
-    } else if (captchaRes.action === "Go Back") {
+    } else if (captchaRes.action === "[4] Go Back") {
       global.runMain();
       return;
     }
@@ -270,17 +122,17 @@ export const handleEditSettings = async () => {
         name: "action",
         message: "IMAP Manager:",
         choices: [
-          "Add IMAP Provider",
-          "View saved IMAP Providers",
-          "Clear All Providers",
+          "[1] Add IMAP Provider",
+          "[2] View saved IMAP Providers",
+          "[3] Clear All Providers",
           new inquirer.Separator(),
-          "Go Back",
+          "[4] Go Back",
         ],
       },
     ]);
 
     // Add IMAP Provider
-    if (imapRes.action === "Add IMAP Provider") {
+    if (imapRes.action === "[1] Add IMAP Provider") {
       let options = [
         {
           label: "GMAIL",
@@ -357,7 +209,7 @@ export const handleEditSettings = async () => {
       return;
 
       // View saved IMAP Providers
-    } else if (imapRes.action === "View saved IMAP Providers") {
+    } else if (imapRes.action === "[2] View saved IMAP Providers") {
       let saved = await config.get("ebay-cli");
       if (!saved.imap || saved.imap.length === 0) {
         global.logThis("❌ No IMAP Providers saved!", "error");
@@ -370,7 +222,7 @@ export const handleEditSettings = async () => {
       return;
 
       // Clear All Providers
-    } else if (imapRes.action === "Clear All Providers") {
+    } else if (imapRes.action === "[3] Clear All Providers") {
       let saved = await config.get("ebay-cli");
       if (saved.imap) {
         saved.imap = [];
@@ -383,9 +235,157 @@ export const handleEditSettings = async () => {
       global.runMain();
       return;
       // Go Back
-    } else if (imapRes.action === "Go Back") {
+    } else if (imapRes.action === "[4] Go Back") {
       global.runMain();
       return;
     }
+  } else if (response.action === "[3] SMS") {
+    let smsRes = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: "SMS Settings:",
+        choices: [
+          "[1] Add SMS Provider",
+          "[2] View SMS Providers",
+          "[3] Clear All Providers",
+          new inquirer.Separator(),
+          "[4] Go Back",
+        ],
+      },
+    ]);
+    if (smsRes.action === "[1] Add SMS Provider") {
+      let addNewSmsRes = await inquirer.prompt([
+        {
+          type: "list",
+          name: "action",
+          message: "Select SMS provider to add:",
+          choices: ["5sim.net", "SMS-Activate", "TextVerified"],
+        },
+        {
+          type: "input",
+          name: "apiKey",
+          message: "Paste API Key:",
+        },
+        {
+          type: "input",
+          name: "apiUserName",
+          message: "Paste API Username:",
+          when: (answers) => answers.action === "TextVerified",
+        },
+      ]);
+
+      let saved = await config.get("ebay-cli");
+      if (!saved.sms) {
+        saved.sms = {
+          fivesim: { key: "", balance: 0 },
+          smsactivate: { key: "", balance: 0 },
+          textverified: {
+            key: "",
+            apiUserName: "",
+            bearerToken: "",
+            expiresAt: "",
+            balance: 0,
+          },
+        };
+      } else {
+        if (addNewSmsRes.action === "5sim.net") {
+          saved.sms.fivesim.key = addNewSmsRes.apiKey;
+        } else if (addNewSmsRes.action === "SMS-Activate") {
+          saved.sms.smsactivate.key = addNewSmsRes.apiKey;
+        } else if (addNewSmsRes.action === "TextVerified") {
+          saved.sms.textverified.key = addNewSmsRes.apiKey;
+          saved.sms.textverified.apiUserName = addNewSmsRes.apiUserName;
+          saved.sms.textverified.bearerToken = "";
+          saved.sms.textverified.expiresAt = "";
+        }
+        config.set("ebay-cli", saved);
+      }
+
+      config.set("ebay-cli", saved);
+      global.logThis("🟢 SMS Provider updated!", "success");
+      await sleep(2500);
+      global.runMain();
+      return;
+    } else if (smsRes.action === "[2] View SMS Providers") {
+      let saved = await config.get("ebay-cli");
+      if (!saved.sms) {
+        global.logThis("❌ No SMS Providers saved!", "error");
+      }
+
+      // Create & Start loading spinner
+      const spinner = createSpinner(`Fetching Providers...`);
+
+      // Create table
+      let tableData = Object.entries(saved.sms).map(
+        ([name, { key, balance = 0 }]) => ({
+          Name: name,
+          FullKey: key, // Store the full key
+          ShortenedKey: shortenApiKey(key), // Store the shortened key for display
+          Balance: balance,
+        })
+      );
+      // Update tableData with the latest balance for each provider directly
+      await Promise.all(
+        tableData.map(async (provider) => {
+          provider.Balance = await checkBalance(
+            provider.Name,
+            provider.FullKey
+          );
+        })
+      );
+
+      // Display table with shortened keys
+      let displayData = tableData.map(({ Name, ShortenedKey, Balance }) => ({
+        Name,
+        Key: ShortenedKey,
+        Balance,
+      }));
+
+      // Stop spinner
+      spinner.stop();
+
+      // Display table
+      global.logThis("🟢 SMS Providers:", "success");
+      console.table(displayData);
+
+      // Prompt user to press any key to continue when done looking at providers
+      await promptPressToContinue();
+
+      global.runMain();
+      return;
+    } else if (smsRes.action === "[3] Clear All Providers") {
+      let saved = await config.get("ebay-cli");
+      global.logThis("🟢 SMS Providers cleared!", "success");
+      if (saved.sms) {
+        saved.sms = {
+          fivesim: { key: "", balance: "" },
+          smsactivate: { key: "", balance: "" },
+          textverified: {
+            key: "",
+            apiUserName: "",
+            bearerToken: "",
+            expiresAt: "",
+            balance: "",
+          },
+        };
+        config.set("ebay-cli", saved);
+      }
+
+      await sleep(2500);
+      global.runMain();
+      return;
+    } else if (smsRes.action === "[4] Go Back") {
+      global.runMain();
+      return;
+    }
+  } else if (response.action === "[4] Webhooks") {
+    global.logThis("🕒 Opening Webhook Manager...", "info");
+    // TODO: Webhook
+    notDevelopedYet();
+    // await handleWebhookManager();
+  } else if (response.action === "[5] Go Back") {
+    global.runMain();
+    return;
   }
 };
