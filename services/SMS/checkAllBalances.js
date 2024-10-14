@@ -1,3 +1,4 @@
+import AppError from "../../utilities/errorHandling/appError.js";
 import { getTextVerifiedBalance } from "./providers/textVerified.js";
 
 // TODO: Change this to checkBalance(). handle only balance checking. Extract everything else into a function
@@ -41,7 +42,7 @@ export const checkBalance = async (name, key, tableData) => {
 
     return balance;
   } catch (error) {
-    throw new Error(`Error checking SMS balance: ${error.message}`);
+    throw new AppError(`Error checking SMS balance: ${error.message}`, "E_SMS");
   }
 };
 

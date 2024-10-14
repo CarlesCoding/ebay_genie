@@ -58,25 +58,25 @@ const configSchema = Joi.object({
       balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
     }).default({}),
   }).default({}),
-  // captcha: Joi.object({
-  //   twocaptcha: Joi.object({
-  //     key: Joi.string().allow("").default(""), // Allow empty string
-  //     balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
-  //   }),
-  //   capmonster: Joi.object({
-  //     key: Joi.string().allow("").default(""), // Allow empty string
-  //     balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
-  //   }),
-  //   capsolver: Joi.object({
-  //     key: Joi.string().allow("").default(""), // Allow empty string
-  //     balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
-  //   }),
-  // }).default({}),
   captcha: Joi.object({
-    twocaptcha: Joi.string().allow("").default(""),
-    capmonster: Joi.string().allow("").default(""), // Allow empty string
-    capsolver: Joi.string().allow("").default(""), // Allow empty string
+    twocaptcha: Joi.object({
+      key: Joi.string().allow("").default(""), // Allow empty string
+      balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
+    }),
+    capmonster: Joi.object({
+      key: Joi.string().allow("").default(""), // Allow empty string
+      balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
+    }),
+    capsolver: Joi.object({
+      key: Joi.string().allow("").default(""), // Allow empty string
+      balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
+    }),
   }).default({}),
+  // captcha: Joi.object({
+  //   twocaptcha: Joi.string().allow("").default(""),
+  //   capmonster: Joi.string().allow("").default(""), // Allow empty string
+  //   capsolver: Joi.string().allow("").default(""), // Allow empty string
+  // }).default({}),
 
   MAX_VIEWS: Joi.number().default(50).min(1).max(100),
   MAX_CONCURRENT_TASKS: Joi.number().default(3).min(1),

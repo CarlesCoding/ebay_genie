@@ -378,8 +378,9 @@ export const restartApp = async (sleepTime = 0) => {
 
 // Custom loading spinner
 export const createSpinner = (text) => {
-  const spinner = yoctoSpinner({ text: `${text}` }).start();
+  const spinner = yoctoSpinner({ text: `${text}` });
   return {
+    start: () => spinner.start(), // Start the spinner
     success: (message) => spinner.success(message), // Mark spinner as success
     fail: (message) => spinner.fail(message), // Mark spinner as failure
     update: (newText) => spinner.update({ text: newText }), // Update spinner text

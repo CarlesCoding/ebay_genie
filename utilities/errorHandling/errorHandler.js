@@ -23,7 +23,7 @@ export const handleError = (err) => {
     }
 
     // Log and display the operational error
-    log(`${errorMessage}`, "error");
+    log(`💥 ${errorMessage}`, "error");
     // console.error(`💥 ${errorMessage}`);
 
     // Exit process for fatal operational errors

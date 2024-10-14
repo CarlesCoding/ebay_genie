@@ -1,4 +1,4 @@
-import { log, sleep } from "../../helpers.js";
+import { log, restartApp, sleep } from "../../helpers.js";
 import path from "path";
 import fs from "fs";
 import os from "os";
@@ -41,9 +41,7 @@ export const handleImportExport = async () => {
     return;
   }
 
-  await sleep(5000);
-  global.runMain();
-  return;
+  await restartApp(2500);
 };
 
 const importConfFile = (filePath) => {

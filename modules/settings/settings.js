@@ -13,8 +13,7 @@ import {
 } from "../../helpers.js";
 import { handleWebhookManager } from "../../services/discord/handleWebhook.js";
 import AppError from "../../utilities/errorHandling/appError.js";
-
-// TODO: captchas need saved like sms providers (sharing balance along with key)
+import { checkCaptchaBalances } from "../../services/captcha/checkAllBalances.js";
 
 export const handleEditSettings = async () => {
   try {
@@ -91,17 +90,48 @@ export const handleEditSettings = async () => {
           log("🟢 Captcha Provider updated!", "success");
           await restartApp(2500);
         } else if (captchaRes.action === "[2] View saved Captcha Providers") {
-          let saved = await config.get("ebay-cli");
-          if (!saved.captcha) {
-            log("❌ No Captcha Providers saved!", "error");
-          } else {
+          // Create spinner
+          let spinner = createSpinner(`Fetching Providers...`);
+          try {
+            let saved = await config.get("ebay-cli");
+            if (!saved.captcha) {
+              log("❌ No Captcha Providers saved!", "error");
+              return;
+            }
+
+            // Start loading spinner
+            spinner.start();
+
+            // Create table to display webhooks
+            let tableData = Object.entries(saved.captcha).map(
+              ([name, { key, balance = 0 }]) => ({
+                Name: name,
+                Key: key,
+                Balance: balance,
+              })
+            );
+
+            // Update tableData with the latest balance for each provider directly
+            await Promise.all(
+              tableData.map(async (provider) => {
+                provider.Balance = await checkCaptchaBalances(
+                  provider.Name,
+                  provider.Key
+                );
+              })
+            );
+
+            // Stop spinner
+            spinner.stop();
             log("🟢 Captcha Providers:", "success");
-            console.table(saved.captcha);
+            console.table(tableData);
 
             await promptPressToContinue();
+            await restartApp();
+          } catch (error) {
+            spinner.stop();
+            throw error;
           }
-
-          await restartApp(2500);
         } else if (captchaRes.action === "[3] Clear All Providers") {
           let saved = await config.get("ebay-cli");
           if (saved.captcha) {
@@ -229,7 +259,7 @@ export const handleEditSettings = async () => {
 
             await promptPressToContinue();
           }
-          await restartApp(5000);
+          await restartApp();
 
           // Clear All Providers
         } else if (imapRes.action === "[3] Clear All Providers") {
@@ -394,7 +424,6 @@ export const handleEditSettings = async () => {
           "E_SETTINGS"
         );
       }
-      // TODO: Change this to be able to save multiple webhooks
     } else if (response.action === "[4] Webhooks") {
       try {
         log("🕒 Opening Webhook Manager...", "info");
@@ -409,6 +438,6 @@ export const handleEditSettings = async () => {
       await restartApp();
     }
   } catch (error) {
-    throw new AppError(`Error in Settings: ${error.message}`, "E_SETTINGS");
+    throw new AppError(`${error.message}`, "E_SETTINGS");
   }
 };
