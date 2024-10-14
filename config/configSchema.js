@@ -72,12 +72,6 @@ const configSchema = Joi.object({
       balance: Joi.number().default(0), // Ensure balance is a number and defaults to 0
     }),
   }).default({}),
-  // captcha: Joi.object({
-  //   twocaptcha: Joi.string().allow("").default(""),
-  //   capmonster: Joi.string().allow("").default(""), // Allow empty string
-  //   capsolver: Joi.string().allow("").default(""), // Allow empty string
-  // }).default({}),
-
   MAX_VIEWS: Joi.number().default(50).min(1).max(100),
   MAX_CONCURRENT_TASKS: Joi.number().default(3).min(1),
   CONNECTION_TIMEOUT_LIMIT: Joi.number().default(5000).min(1),

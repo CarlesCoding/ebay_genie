@@ -64,13 +64,7 @@ export const handleEditSettings = async () => {
             },
           ]);
           let saved = await config.get("ebay-cli");
-          // TODO: Refactor to be like sms
           if (!saved.captcha) {
-            // saved.captcha = {
-            //   twocaptcha: "",
-            //   capmonster: "",
-            //   capsolver: "",
-            // };
             saved.captcha = {
               twocaptcha: { key: "", balance: 0 },
               capmonster: { key: "", balance: 0 },

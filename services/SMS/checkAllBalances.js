@@ -1,10 +1,8 @@
 import AppError from "../../utilities/errorHandling/appError.js";
 import { getTextVerifiedBalance } from "./providers/textVerified.js";
 
-// TODO: Change this to checkBalance(). handle only balance checking. Extract everything else into a function
-
 // ------------------- Check All Providers Balance --------------------
-export const checkBalance = async (name, key, tableData) => {
+export const checkBalance = async (name, key) => {
   try {
     let balance;
 
