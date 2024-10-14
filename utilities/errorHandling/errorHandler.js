@@ -24,7 +24,7 @@ export const handleError = (err) => {
 
     // Log and display the operational error
     log(`${errorMessage}`, "error");
-    console.error(`💥 ${errorMessage}`);
+    // console.error(`💥 ${errorMessage}`);
 
     // Exit process for fatal operational errors
     if (err.code === "E_FATAL") {
@@ -98,4 +98,6 @@ const errorCodeEnums = [
   "E_BOTPROTECTION", // Errors related to bot protection
   "E_INTERACTION_FAILED", // Errors related to interaction failed
   "E_SIMULATE_CLICK", // Errors related to simulate click
+  "E_SETTINGS", // Errors related to settings
+  "E_WEBHOOK", // Errors related to webhook handling
 ];

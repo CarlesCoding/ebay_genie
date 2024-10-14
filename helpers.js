@@ -365,9 +365,15 @@ export const generatePassword = (characterAmount) => {
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Restart main function
-export const restartApp = async (sleepTime) => {
-  await sleep(sleepTime);
-  global.runMain();
+export const restartApp = async (sleepTime = 0) => {
+  try {
+    log("\nRestarting app...", "info");
+    await sleep(sleepTime);
+    global.runMain();
+    return;
+  } catch (error) {
+    throw new AppError(`Failed to restart app: ${error.message}`, "E_FATAL");
+  }
 };
 
 // Custom loading spinner

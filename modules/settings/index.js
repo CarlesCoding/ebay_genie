@@ -2,7 +2,7 @@ import inquirer from "inquirer";
 import { handleEditSettings } from "./settings.js";
 import config from "../../config/config.js";
 import { handleImportExport } from "./handleImportExport.js";
-import { sleep } from "../../helpers.js";
+import { log, restartApp } from "../../helpers.js";
 
 export const handleSettingsManager = async () => {
   let response = await inquirer.prompt([
@@ -22,25 +22,26 @@ export const handleSettingsManager = async () => {
   ]);
 
   if (response.action === "[1] Edit Settings") {
-    await handleEditSettings();
+    try {
+      await handleEditSettings();
+    } catch (error) {
+      throw error;
+    }
   } else if (response.action === "[2] Import/Export Settings") {
     await handleImportExport();
   } else if (response.action === "[3] Force Refresh Configuration") {
-    global.logThis("🕒 Refreshing Configuration...", "info");
+    log("🕒 Refreshing Configuration...", "info");
     global.savedConfig = config.get("ebay-cli");
-    global.logThis("🟢 Configuration refreshed!", "success");
-    await sleep(1500);
-    global.runMain();
+    log("🟢 Configuration refreshed!", "success");
+    await restartApp(1500);
     return;
   } else if (response.action === "[4] Delete All Saved Settings") {
-    global.logThis("🕒 Deleting all saved settings...", "info");
+    log("🕒 Deleting all saved settings...", "info");
     config.clear();
-    global.logThis("🟢 All saved settings deleted!", "success");
-    await sleep(1500);
-    global.runMain();
+    log("🟢 All saved settings deleted!", "success");
+    await restartApp(1500);
     return;
   } else if (response.action === "[5] Go Back") {
-    global.runMain();
-    return;
+    await restartApp();
   }
 };
