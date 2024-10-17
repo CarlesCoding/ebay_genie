@@ -43,4 +43,10 @@ export const questions = [
     name: "useProxies",
     message: "Use proxies? (Residential proxies recommended)",
   },
+  {
+    type: "list",
+    name: "webhook",
+    message: "Which webhook would you like to use?",
+    choices: savedWebhooks.map((x) => x.label),
+  },
 ];

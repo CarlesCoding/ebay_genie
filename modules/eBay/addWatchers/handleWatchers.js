@@ -8,7 +8,7 @@ const MAX_CONCURRENT_TASKS = config.get("MAX_CONCURRENT_TASKS");
 
 export const handleAddWatchers = async () => {
   const answers = await inquirer.prompt(questions);
-  const { watcherCount } = answers;
+  const { watcherCount, webhook } = answers;
   const succeededTasks = [];
   const failedTasks = [];
 
@@ -32,6 +32,8 @@ export const handleAddWatchers = async () => {
   } catch (error) {
     logger(module, `Watcher Task failed: ${error.message}`, "error");
   }
+
+  // TODO: Send success message to webhook
 
   logger(
     module,

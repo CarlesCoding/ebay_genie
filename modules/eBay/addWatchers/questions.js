@@ -1,5 +1,8 @@
+import config from "../../../config/config.js";
 import { getAllSavedAccounts } from "../../../helpers.js";
 import { urls } from "../../../utilities/urls.js";
+
+let savedWebhooks = config.get("ebay-cli.webhooks");
 
 export const questions = [
   {
@@ -40,5 +43,11 @@ export const questions = [
     type: "confirm",
     name: "useProxies",
     message: "Would you like to use proxies?",
+  },
+  {
+    type: "list",
+    name: "webhook",
+    message: "Which webhook would you like to use?",
+    choices: savedWebhooks.map((x) => x.label),
   },
 ];

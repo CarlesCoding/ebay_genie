@@ -29,19 +29,24 @@ export const handleWebhookManager = async () => {
     if (response.action === "[1] Add Webhook") {
       await handleAddWebhook();
       await restartApp(2500);
+      return;
     } else if (response.action === "[2] View Webhooks") {
       await handleViewWebhooks();
       await restartApp(2500);
+      return;
     } else if (response.action === "[3] Delete Webhooks") {
       await handleDeleteWebhook();
       await restartApp(2500);
+      return;
     } else if (response.action === "[4] Go Back") {
       await restartApp();
+      return;
     }
   } catch (error) {
     log(`❌ Webhook Error: ${error.message}`, "error");
     // Restart app
     await restartApp(3000);
+    return;
   }
 };
 

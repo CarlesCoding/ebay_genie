@@ -100,4 +100,5 @@ const errorCodeEnums = [
   "E_SIMULATE_CLICK", // Errors related to simulate click
   "E_SETTINGS", // Errors related to settings
   "E_WEBHOOK", // Errors related to webhook handling
+  "E_TASK", // Errors related to task handling
 ];

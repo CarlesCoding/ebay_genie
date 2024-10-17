@@ -37,11 +37,12 @@ export const handleImportExport = async () => {
   } else if (response.action === "[2] Export") {
     exportConfFile();
   } else if (response.action === "[3] Go Back") {
-    global.runMain();
+    await restartApp();
     return;
   }
 
-  await restartApp(2500);
+  await restartApp(1500);
+  return;
 };
 
 const importConfFile = (filePath) => {
@@ -93,6 +94,7 @@ const exportConfFile = () => {
       return;
     }
 
+    // Write the config to the downloads folder
     fs.writeFileSync(filePath, JSON.stringify(currentConfig, null, 2));
     log(`🟢 Config exported to users downloads folder!`, "success");
   } catch (error) {

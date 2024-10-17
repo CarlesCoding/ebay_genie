@@ -43,5 +43,6 @@ export const handleSettingsManager = async () => {
     return;
   } else if (response.action === "[5] Go Back") {
     await restartApp();
+    return;
   }
 };

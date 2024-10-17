@@ -83,6 +83,7 @@ export const handleEditSettings = async () => {
           config.set("ebay-cli", saved);
           log("🟢 Captcha Provider updated!", "success");
           await restartApp(2500);
+          return;
         } else if (captchaRes.action === "[2] View saved Captcha Providers") {
           // Create spinner
           let spinner = createSpinner(`Fetching Providers...`);
@@ -122,6 +123,7 @@ export const handleEditSettings = async () => {
 
             await promptPressToContinue();
             await restartApp();
+            return;
           } catch (error) {
             spinner.stop();
             throw error;
@@ -141,8 +143,10 @@ export const handleEditSettings = async () => {
           }
 
           await restartApp(2500);
+          return;
         } else if (captchaRes.action === "[4] Go Back") {
           await restartApp();
+          return;
         }
       } catch (error) {
         throw new AppError(
@@ -241,6 +245,7 @@ export const handleEditSettings = async () => {
           config.set("ebay-cli", saved);
           log("🟢 IMAP Provider added!", "success");
           await restartApp(2500);
+          return;
 
           // View saved IMAP Providers
         } else if (imapRes.action === "[2] View saved IMAP Providers") {
@@ -254,6 +259,7 @@ export const handleEditSettings = async () => {
             await promptPressToContinue();
           }
           await restartApp();
+          return;
 
           // Clear All Providers
         } else if (imapRes.action === "[3] Clear All Providers") {
@@ -266,8 +272,10 @@ export const handleEditSettings = async () => {
             log("❌ No IMAP Providers saved!", "error");
           }
           await restartApp(2500);
+          return;
         } else if (imapRes.action === "[4] Go Back") {
           await restartApp();
+          return;
         }
       } catch (error) {
         throw new AppError(
@@ -341,6 +349,7 @@ export const handleEditSettings = async () => {
           config.set("ebay-cli", saved);
           log("🟢 SMS Provider updated!", "success");
           await restartApp(2500);
+          return;
         } else if (smsRes.action === "[2] View SMS Providers") {
           let saved = await config.get("ebay-cli");
           if (!saved.sms) {
@@ -409,8 +418,11 @@ export const handleEditSettings = async () => {
           }
 
           await restartApp(2500);
+          return;
+          return;
         } else if (smsRes.action === "[4] Go Back") {
           await restartApp();
+          return;
         }
       } catch (error) {
         throw new AppError(
@@ -430,6 +442,7 @@ export const handleEditSettings = async () => {
       }
     } else if (response.action === "[5] Go Back") {
       await restartApp();
+      return;
     }
   } catch (error) {
     throw new AppError(`${error.message}`, "E_SETTINGS");

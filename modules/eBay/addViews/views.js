@@ -18,7 +18,7 @@ import { fetchWithProxies } from "../../proxyManager/proxy.js";
 
 export const handleAddViews = async () => {
   const answers = await inquirer.prompt(questions);
-  const { viewCount, ebayUrl, useProxies } = answers;
+  const { viewCount, ebayUrl, useProxies, webhook } = answers;
   sendView(viewCount, ebayUrl, useProxies);
 };
 
@@ -108,6 +108,8 @@ const sendView = async (viewCount, ebayUrl, useProxies) => {
         success++;
       }
     });
+
+    // TODO: Send success message to webhook
 
     // log success
     log(
